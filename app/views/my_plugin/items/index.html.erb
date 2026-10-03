@@ -1,0 +1,25 @@
+<% @page_title = "Pinned" %>
+
+<section class="panel shadow center index-table">
+  <% if @items.any? %>
+    <table class="data-table">
+      <thead>
+        <tr><th><%= term(:client) %></th><th>Pinned</th><th></th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @items.each do |item| %>
+          <%# herb:key item.id %>
+          <tr data-filter-target="item">
+            <td><%= link_to item.client.name, main_app.client_path(item.client, tab: "plugin-my_plugin") %></td>
+            <td><%= item.body %></td>
+            <td><%= person_tag item.user %></td>
+            <% delete_path = (my_plugin_item_path(item) if item.removable_by?(Current.user)) %>
+            <%= render "layouts/shared/row_actions", name: "this pinned item", edit_path: nil, delete_path: delete_path %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="blank-slate">Nothing pinned yet. Pin a line from a <%= term(:client).downcase %>’s Pinned tab.</div>
+  <% end %>
+</section>
