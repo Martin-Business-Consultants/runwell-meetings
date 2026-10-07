@@ -1,0 +1,14 @@
+<%# locals: (person:, date:) %>
+<%# The + at the top right of a person's card (Team day, the meeting room): the core's modal dialog,
+    centred, with the work to pick from (Meetings::PicksController) loaded when it opens. %>
+<div class="meetings-add-priority" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+  <button type="button" class="btn btn--circle txt-small" title="Add a priority for <%= person.display_name %>" data-action="dialog#open">
+    <%= icon_tag "add" %>
+    <span class="for-screen-reader">Add a priority for <%= person.display_name %></span>
+  </button>
+  <dialog class="dialog panel fill-white shadow txt-small meetings-pick-dialog" aria-label="A priority for <%= person.display_name %>" data-dialog-target="dialog">
+    <turbo-frame id="pick_for_<%= person.id %>" loading="lazy" src="<%= meetings_picks_path(user_id: person.id, day: date.iso8601) %>">
+      <p class="txt-small txt-subtle margin-none">Loading <%= term(:work).downcase %>…</p>
+    </turbo-frame>
+  </dialog>
+</div>

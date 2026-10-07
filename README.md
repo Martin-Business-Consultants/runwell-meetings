@@ -8,7 +8,7 @@ A team's daily rhythm in [Runwell](https://github.com/Martin-Business-Consultant
   positioning gem.
 - **Team day**: everyone's priorities and reports for a day side by side, to go through together;
   narrowed to one meeting's people from that meeting (Team day) or its filter. The + on each
-  person's card opens a fuzzy finder of open work (theirs first), narrowed to a client or an
+  person's card (and in the meeting room) opens a fuzzy finder of open work (theirs first), narrowed to a client or an
   engagement, or takes a line of their own.
 - **Meetings**: an agenda and notes, and the meeting room: everyone in the meeting with their
   priorities for its day on the right, and open work to pick from on the left. Search either side;
@@ -50,5 +50,5 @@ From a Runwell checkout beside it: `bin/rails "plugins:link[../runwell-meetings]
 
 ## Release
 
-Bump `lib/meetings/version.rb`, commit, then `git tag v0.4.2 && git push --tags`. The workflow
+Bump `lib/meetings/version.rb`, commit, then `git tag v0.4.3 && git push --tags`. The workflow
 publishes the release; installs see it in Settings › Plugins and update when someone presses Update.

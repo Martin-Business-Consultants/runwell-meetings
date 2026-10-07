@@ -348,13 +348,13 @@
   }
 }
 
-/* Team day: the + at the top right of each person's card opens their menu of work. */
+/* The + at the top right of each person's card (Team day, the meeting room) opens their menu of work. */
 @layer components {
   .meetings-team__person .meetings-person__header {
     position: relative;
   }
 
-  .meetings-team__add {
+  .meetings-add-priority {
     margin-inline-start: auto;
   }
 

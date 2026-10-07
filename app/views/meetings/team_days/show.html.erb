@@ -48,17 +48,7 @@
           <%= person_tag person, size: :large %>
           <%= link_to person.display_name, meetings_day_path(team.date.iso8601, person.id), class: "txt-ink font-weight-bold" %>
           <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> done</span>
-          <div class="meetings-team__add" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-            <button type="button" class="btn btn--circle txt-small" title="Add a priority for <%= person.display_name %>" data-action="dialog#open">
-              <%= icon_tag "add" %>
-              <span class="for-screen-reader">Add a priority for <%= person.display_name %></span>
-            </button>
-            <dialog class="dialog panel fill-white shadow txt-small meetings-pick-dialog" aria-label="A priority for <%= person.display_name %>" data-dialog-target="dialog">
-              <turbo-frame id="pick_for_<%= person.id %>" loading="lazy" src="<%= meetings_picks_path(user_id: person.id, day: team.date.iso8601) %>">
-                <p class="txt-small txt-subtle margin-none">Loading <%= term(:work).downcase %>…</p>
-              </turbo-frame>
-            </dialog>
-          </div>
+          <%= render "meetings/add_priority", person: person, date: team.date %>
         </header>
 
         <% if priorities.any? %>

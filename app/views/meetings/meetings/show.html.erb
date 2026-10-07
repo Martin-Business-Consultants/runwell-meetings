@@ -112,21 +112,13 @@
                 <%= person_tag person, size: :large %>
                 <%= link_to person.display_name, meetings_day_path(@meeting.day.iso8601, user_id: person.id), class: "txt-ink font-weight-bold", data: { turbo_frame: "_top" } %>
                 <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> done</span>
+                <%= render "meetings/add_priority", person: person, date: @meeting.day %>
               </header>
               <% if listed.any? %>
                 <%= render "meetings/priorities", priorities: listed %>
               <% else %>
                 <p class="txt-small txt-subtle margin-none">No priorities yet. Pick from the <%= term(:work).downcase %> on the left, or add a line.</p>
               <% end %>
-              <details class="meetings-person__add">
-                <summary class="btn btn--plain txt-x-small txt-subtle"><%= icon_tag "add" %><span>Add a line</span></summary>
-                <%= form_with url: meetings_priorities_path, scope: :priority, class: "flex gap-half txt-small", namespace: "meeting_person_#{person.id}", data: { turbo_frame: "_top" } do |form| %>
-                  <%= form.hidden_field :user_id, value: person.id %>
-                  <%= form.hidden_field :day, value: @meeting.day.iso8601 %>
-                  <%= form.text_field :title, class: "input flex-item-grow", placeholder: "Something that isn’t #{term(:work).downcase}", required: true, maxlength: 200, autocomplete: "off" %>
-                  <button type="submit" class="btn txt-small">Add</button>
-                <% end %>
-              </details>
             </section>
           <% end %>
         <% end %>
