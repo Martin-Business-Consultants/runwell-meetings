@@ -11,12 +11,7 @@
       </h2>
     </header>
     <% if day.priorities.any? %>
-      <ul class="meetings-priorities">
-        <% day.priorities.each do |priority| %>
-          <%# herb:key priority.id %>
-          <%= render "meetings/priority", priority: priority %>
-        <% end %>
-      </ul>
+      <%= render "meetings/priorities", priorities: day.priorities %>
     <% else %>
       <p class="txt-small txt-subtle margin-none">None set. <%= link_to "Pick a few", meetings_today_path, class: "txt-link" %> from your open <%= term(:work).downcase %>.</p>
     <% end %>

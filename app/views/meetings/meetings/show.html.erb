@@ -17,6 +17,10 @@
       </p>
     </div>
     <div class="page-heading__actions">
+      <%= link_to meetings_team_day_path(date: @meeting.day.iso8601, meeting_id: @meeting.id), class: "btn btn--circle-mobile" do %>
+        <%= icon_tag "everyone" %>
+        <span>Team day</span>
+      <% end %>
       <% if @meeting.series %>
         <% following = @meeting.series.meetings.where("starts_at > ?", @meeting.starts_at).order(:starts_at).first %>
         <% if following %>
@@ -110,12 +114,7 @@
                 <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> done</span>
               </header>
               <% if listed.any? %>
-                <ul class="meetings-priorities">
-                  <% listed.each do |priority| %>
-                    <%# herb:key priority.id %>
-                    <%= render "meetings/priority", priority: priority %>
-                  <% end %>
-                </ul>
+                <%= render "meetings/priorities", priorities: listed %>
               <% else %>
                 <p class="txt-small txt-subtle margin-none">No priorities yet. Pick from the <%= term(:work).downcase %> on the left, or add a line.</p>
               <% end %>

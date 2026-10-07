@@ -1,7 +1,8 @@
 <%# locals: (priority:) %>
-<%# One priority in a list: work links to itself and shows its status; a line of one's own is
-    ticked off here. %>
-<li class="meetings-priority <%= "meetings-priority--done" if priority.done? %>" data-filter-target="item">
+<%# One priority in a list (meetings/priorities): work links to itself and shows its status; a
+    line of one's own is ticked off here. Drag it by its handle, or move it with the arrows. %>
+<li class="meetings-priority <%= "meetings-priority--done" if priority.done? %>" data-filter-target="item" draggable="true" data-drag-and-drop-target="item" data-id="<%= priority.id %>">
+  <span class="meetings-priority__handle" aria-hidden="true" title="Drag to reorder"><%= icon_tag "move" %></span>
   <% if priority.todo %>
     <span class="meetings-priority__mark" aria-hidden="true"><%= icon_tag(priority.done? ? "check-circle" : "check") %></span>
     <div class="meetings-priority__body">
@@ -19,6 +20,18 @@
       <span class="meetings-priority__title"><%= priority.title %></span>
     </div>
   <% end %>
+  <span class="meetings-priority__moves">
+    <%= button_to move_meetings_priority_path(priority), params: { direction: "up" }, class: "btn btn--plain txt-subtle meetings-priority__move meetings-priority__move--up",
+          form: { data: { turbo_frame: "_top" } }, title: "Move up" do %>
+      <%= icon_tag "arrow-up" %>
+      <span class="for-screen-reader">Move <%= priority.label %> up</span>
+    <% end %>
+    <%= button_to move_meetings_priority_path(priority), params: { direction: "down" }, class: "btn btn--plain txt-subtle meetings-priority__move meetings-priority__move--down",
+          form: { data: { turbo_frame: "_top" } }, title: "Move down" do %>
+      <%= icon_tag "arrow-up" %>
+      <span class="for-screen-reader">Move <%= priority.label %> down</span>
+    <% end %>
+  </span>
   <%= button_to meetings_priority_path(priority), method: :delete, class: "btn btn--plain txt-subtle meetings-priority__remove",
         form: { data: { turbo_frame: "_top" } }, title: "Take it off the day" do %>
     <%= icon_tag "close" %>

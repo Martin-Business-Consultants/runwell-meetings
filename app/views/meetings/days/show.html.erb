@@ -29,12 +29,7 @@
         <h2 class="divider">Priorities <span class="txt-subtle"><%= day.done_count %> of <%= day.priorities.size %> done</span></h2>
       </header>
       <% if day.priorities.any? %>
-        <ul class="meetings-priorities">
-          <% day.priorities.each do |priority| %>
-            <%# herb:key priority.id %>
-            <%= render "meetings/priority", priority: priority %>
-          <% end %>
-        </ul>
+        <%= render "meetings/priorities", priorities: day.priorities %>
       <% else %>
         <p class="txt-small txt-subtle margin-none">
           <%= @mine ? "What has to get done #{day.today? ? "today" : "this day"}? Pick a few" : "No priorities set. Pick a few" %> from the open <%= term(:work).downcase %> below, or add a line for anything that isn’t <%= term(:work).downcase %>.

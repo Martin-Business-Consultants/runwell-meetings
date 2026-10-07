@@ -13,7 +13,10 @@ module Meetings
     validates :todo_id, uniqueness: { scope: %i[user_id day], message: "is already a priority that day" }, allow_nil: true
     validate :for_a_person
 
-    before_create { self.position = Priority.where(user_id: user_id, day: day).maximum(:position).to_i + 1 if position.zero? }
+    # The person's own order for the day, kept by the core's positioning gem (as work's is on the
+    # board): a new one goes last, and moving one shifts the rest.
+    attribute :position, :integer, default: nil
+    positioned on: %i[user_id day]
 
     scope :ordered, -> { order(:position, :id) }
 
@@ -22,6 +25,26 @@ module Meetings
     def label = todo&.title || title
     def done? = todo ? todo.status == "done" : done_at.present?
     def status_label = todo ? todo.status.humanize : (done? ? "Done" : "Planned")
+
+    def siblings = Priority.where(user_id: user_id, day: day).where.not(id: id)
+
+    # Dragged to just before another of that day's (by id), or to the end without one.
+    def move!(before: nil)
+      neighbour = siblings.find_by(id: before) if before.present?
+      update!(position: neighbour ? { before: neighbour.id } : :last)
+    end
+
+    # One place up or down, or to the top or bottom (the buttons, and agents).
+    def shift!(direction)
+      case direction.to_s
+      when "up" then (above = siblings.where(position: ...position).order(position: :desc).first) && update!(position: { before: above.id })
+      when "down" then (below = siblings.where(position: (position + 1)..).order(:position).first) && update!(position: { after: below.id })
+      when "top" then update!(position: :first)
+      when "bottom" then update!(position: :last)
+      else raise ArgumentError, "Move it up, down, top or bottom."
+      end
+      self
+    end
 
     # A line of one's own is ticked off here; work is marked done on the work itself.
     def mark!(done)

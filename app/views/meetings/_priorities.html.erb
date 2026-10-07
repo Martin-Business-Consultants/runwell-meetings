@@ -1,0 +1,15 @@
+<%# locals: (priorities:) %>
+<%# A person's priorities for a day, in their order: dragged with the core's drag-and-drop (as cards
+    are on the Work board; the drop posts the one it now sits before), or moved a place with the
+    arrows, which need no script. Each list sorts on its own. %>
+<div class="meetings-priorities-sortable" data-controller="drag-and-drop" data-drag-and-drop-target="container" data-drag-and-drop-sortable
+  data-drag-and-drop-url="<%= move_meetings_priority_path("__id__") %>"
+  data-drag-and-drop-dragged-item-class="drag-and-drop__dragged-item" data-drag-and-drop-hover-container-class="drag-and-drop__hover-container"
+  data-action="dragstart->drag-and-drop#dragStart dragover->drag-and-drop#dragOver drop->drag-and-drop#drop dragend->drag-and-drop#dragEnd">
+  <ul class="meetings-priorities" data-drag-drop-item-container>
+    <% priorities.each do |priority| %>
+      <%# herb:key priority.id %>
+      <%= render "meetings/priority", priority: priority %>
+    <% end %>
+  </ul>
+</div>

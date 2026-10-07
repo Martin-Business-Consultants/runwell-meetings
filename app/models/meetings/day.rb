@@ -34,11 +34,18 @@ module Meetings
     end
 
     # Adds the unfinished ones from the previous workday to the end of this day's list.
+    # (One insert, numbered after the last, rather than one placement each.)
     def carry_over!(by:)
+      rows = carry_over
+      return [] if rows.empty?
+
       last = Priority.where(user: user, day: date).maximum(:position).to_i
-      carry_over.each_with_index.map do |priority, index|
-        Priority.create!(user: user, day: date, todo: priority.todo, title: priority.title, added_by: by, position: last + index + 1)
-      end
+      now = Time.current
+      Priority.insert_all!(rows.each_with_index.map do |priority, index|
+        { user_id: user.id, day: date, todo_id: priority.todo_id, title: priority.title, added_by_id: by&.id,
+          position: last + index + 1, created_at: now, updated_at: now }
+      end)
+      rows
     end
 
     def previous_workday

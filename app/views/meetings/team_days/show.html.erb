@@ -1,0 +1,84 @@
+<% team = @team %>
+<% @page_title = "Team day" %>
+<%= render "meetings/nav", current: :team %>
+<% params_for = ->(date) { { date: date.iso8601, meeting_id: team.meeting&.id }.compact } %>
+
+<% content_for :index_filters do %>
+  <% if team.meetings.any? || team.meeting %>
+    <%= render "layouts/shared/quick_filter", title: "Who…", param: :meeting_id, current: team.meeting&.id.to_s,
+          options: [ [ "Everyone", "" ] ] + (team.meetings | [ team.meeting ].compact).map { [ "In #{it.title} (#{l it.starts_at.in_time_zone, format: "%H:%M"})", it.id.to_s ] } %>
+  <% end %>
+<% end %>
+<%= render "layouts/shared/index_toolbar" %>
+
+<div class="page-heading margin-block-end">
+  <div>
+    <p class="font-weight-bold margin-none"><%= team.label %><%= " · today" if team.today? %></p>
+    <p class="txt-small txt-subtle margin-none"><%= team.done_count %> of <%= team.total_count %> priorities done across <%= pluralize team.people.size, "person", plural: "people" %></p>
+  </div>
+  <div class="page-heading__actions">
+    <%= link_to meetings_team_day_path(**params_for.(team.date.prev_day)), class: "btn btn--circle", title: "The day before" do %>
+      <%= icon_tag "arrow-left" %>
+      <span class="for-screen-reader">The day before</span>
+    <% end %>
+    <% unless team.today? %>
+      <%= link_to "Today", meetings_team_day_path(**params_for.(Date.current)), class: "btn" %>
+    <% end %>
+    <%= link_to meetings_team_day_path(**params_for.(team.date.next_day)), class: "btn btn--circle", title: "The day after" do %>
+      <%= icon_tag "arrow-right" %>
+      <span class="for-screen-reader">The day after</span>
+    <% end %>
+    <% if team.meeting %>
+      <%= link_to meetings_meeting_path(team.meeting), class: "btn" do %>
+        <%= icon_tag "everyone" %>
+        <span><%= team.meeting.title %></span>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<% if team.people.any? %>
+  <section class="meetings-team">
+    <% team.people.each do |person| %>
+      <%# herb:key person.id %>
+      <% priorities = team.priorities_for(person) %>
+      <% report = team.report_for(person) %>
+      <article class="panel shadow txt-align-start meetings-team__person" data-filter-target="item">
+        <header class="meetings-person__header">
+          <%= person_tag person, size: :large %>
+          <%= link_to person.display_name, meetings_day_path(team.date.iso8601, person.id), class: "txt-ink font-weight-bold" %>
+          <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> done</span>
+        </header>
+
+        <% if priorities.any? %>
+          <%= render "meetings/priorities", priorities: priorities %>
+        <% else %>
+          <p class="txt-small txt-subtle margin-none">No priorities set.</p>
+        <% end %>
+
+        <details class="meetings-person__add">
+          <summary class="btn btn--plain txt-x-small txt-subtle"><%= icon_tag "add" %><span>Add a line</span></summary>
+          <%= form_with url: meetings_priorities_path, scope: :priority, class: "flex gap-half txt-small", namespace: "team_person_#{person.id}" do |form| %>
+            <%= form.hidden_field :user_id, value: person.id %>
+            <%= form.hidden_field :day, value: team.date.iso8601 %>
+            <%= form.text_field :title, class: "input flex-item-grow", placeholder: "A priority for the day", required: true, maxlength: 200, autocomplete: "off" %>
+            <button type="submit" class="btn txt-small">Add</button>
+          <% end %>
+        </details>
+
+        <div class="meetings-team__report">
+          <% if report %>
+            <details>
+              <summary class="txt-small font-weight-bold">How the day went</summary>
+              <%= render "meetings/reports/answers", report: report %>
+            </details>
+          <% else %>
+            <p class="txt-x-small txt-subtle margin-none">No report<%= " yet" if team.today? %>.</p>
+          <% end %>
+        </div>
+      </article>
+    <% end %>
+  </section>
+<% else %>
+  <div class="blank-slate">Nobody is in that meeting.</div>
+<% end %>

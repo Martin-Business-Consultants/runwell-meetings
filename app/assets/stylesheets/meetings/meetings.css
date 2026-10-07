@@ -298,3 +298,71 @@
     }
   }
 }
+
+/* Reordering a day's priorities: a handle to drag (the core's drag-and-drop), and arrows that
+/* show on the row you're on; the first has no up, the last no down. Team day: a card per person. */
+@layer components {
+  .meetings-priority {
+    position: relative;
+  }
+
+  .meetings-priority__handle {
+    color: var(--color-ink-medium);
+    cursor: grab;
+    flex: none;
+    opacity: 0.4;
+  }
+
+  .meetings-priority__moves {
+    display: inline-flex;
+    flex: none;
+    opacity: 0;
+
+    form {
+      display: contents;
+    }
+  }
+
+  .meetings-priority:is(:hover, :focus-within) .meetings-priority__moves,
+  .meetings-priority:is(:hover, :focus-within) .meetings-priority__handle {
+    opacity: 1;
+  }
+
+  .meetings-priority__move--down .icon {
+    rotate: 180deg;
+  }
+
+  .meetings-priority:first-child .meetings-priority__move--up,
+  .meetings-priority:last-child .meetings-priority__move--down {
+    visibility: hidden;
+  }
+
+  @media (any-hover: none) {
+    .meetings-priority__moves,
+    .meetings-priority__handle {
+      opacity: 1;
+    }
+  }
+
+  .meetings-team {
+    display: grid;
+    gap: var(--block-space);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  .meetings-team__person {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space-half);
+    padding: var(--block-space);
+  }
+
+  .meetings-team__report {
+    border-block-start: 1px solid var(--color-ink-lighter);
+    padding-block-start: var(--block-space-half);
+
+    summary {
+      cursor: pointer;
+    }
+  }
+}

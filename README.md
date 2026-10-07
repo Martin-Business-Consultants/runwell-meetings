@@ -3,7 +3,11 @@
 A team's daily rhythm in [Runwell](https://github.com/Martin-Business-Consultants/runwellv2):
 
 - **My day**: each person picks the few things that matter today, from their open work or as a
-  line of their own (a call, an errand), and carries over what didn't get done yesterday.
+  line of their own (a call, an errand), and carries over what didn't get done yesterday. They're
+  in the person's own order: drag one (the core's drag-and-drop) or move it with its arrows, kept
+  by the core's positioning gem.
+- **Team day**: everyone's priorities and reports for a day side by side, to go through together;
+  narrowed to one meeting's people from that meeting (Team day) or its filter.
 - **Meetings**: an agenda and notes, and the meeting room: everyone in the meeting with their
   priorities for its day on the right, and open work to pick from on the left. Search either side;
   add work to anyone's day from its + menu. "Plan the next one" repeats a one-off on the next weekday.
@@ -30,7 +34,8 @@ Work done or not comes from the work itself (its status); lines of one's own are
 
 ## Agent tools
 
-`show_day`, `add_priority`, `update_priority`, `remove_priority`, `carry_over_priorities`,
+`show_day`, `show_team_day`, `add_priority`, `update_priority`, `move_priority`, `remove_priority`,
+`carry_over_priorities`,
 `list_meetings`, `show_meeting`, `plan_meeting` (once or repeating), `update_meeting`,
 `plan_next_meeting`, `delete_meeting`, `list_meeting_series`, `update_meeting_series`,
 `stop_meeting_series`, `list_daily_reports`, `save_daily_report`, and the agent workflow
@@ -43,5 +48,5 @@ From a Runwell checkout beside it: `bin/rails "plugins:link[../runwell-meetings]
 
 ## Release
 
-Bump `lib/meetings/version.rb`, commit, then `git tag v0.2.0 && git push --tags`. The workflow
+Bump `lib/meetings/version.rb`, commit, then `git tag v0.3.0 && git push --tags`. The workflow
 publishes the release; installs see it in Settings › Plugins and update when someone presses Update.
