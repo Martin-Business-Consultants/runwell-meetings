@@ -7,7 +7,7 @@
     <span class="for-screen-reader">Add a priority for <%= person.display_name %></span>
   </button>
   <dialog class="dialog panel fill-white shadow txt-small meetings-pick-dialog" aria-label="A priority for <%= person.display_name %>" data-dialog-target="dialog">
-    <turbo-frame id="pick_for_<%= person.id %>" loading="lazy" src="<%= meetings_picks_path(user_id: person.id, day: date.iso8601) %>">
+    <turbo-frame id="pick_for_<%= person.id %>_<%= date.iso8601 %>" loading="lazy" src="<%= meetings_picks_path(user_id: person.id, day: date.iso8601) %>">
       <p class="txt-small txt-subtle margin-none">Loading <%= term(:work).downcase %>…</p>
     </turbo-frame>
   </dialog>

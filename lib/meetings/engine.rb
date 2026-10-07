@@ -11,6 +11,7 @@ module Meetings
           get "today", to: "days#show", as: :today
           get "days/:date(/:user_id)", to: "days#show", as: :day, constraints: { date: /\d{4}-\d{2}-\d{2}/, user_id: /\d+/ }
           get "team(/:date)", to: "team_days#show", as: :team_day, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
+          get "week(/:date)", to: "team_weeks#show", as: :team_week, constraints: { date: /\d{4}-\d{2}-\d{2}/ }
           resources :picks, only: :index
           resources :priorities, only: %i[create update destroy] do
             post :carry_over, on: :collection

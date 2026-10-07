@@ -8,6 +8,7 @@
 <% section_nav "Meetings" do %>
   <%= section_nav_link "My day", meetings_today_path, icon: "check-circle", current: current == :day && person == me %>
   <%= section_nav_link "Team day", meetings_team_day_path, icon: "everyone", current: current == :team %>
+  <%= section_nav_link "Team week", meetings_team_week_path, icon: "grid", current: current == :week %>
   <%= section_nav_link "Meetings", meetings_meetings_path, icon: "clipboard", current: current == :meetings %>
   <%= section_nav_link "Repeating", meetings_series_index_path, icon: "refresh", current: current == :series %>
   <%= section_nav_link "Reports", meetings_reports_path, icon: "activity", current: current == :reports %>

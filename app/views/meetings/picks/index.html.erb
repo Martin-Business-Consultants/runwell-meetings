@@ -1,8 +1,8 @@
-<% frame = "pick_for_#{@person.id}" %>
+<% frame = "pick_for_#{@person.id}_#{@date.iso8601}" %>
 <turbo-frame id="<%= frame %>">
   <div class="meetings-pick-menu" data-controller="filter" data-filter-fuzzy-value="true">
     <div class="flex align-center justify-space-between gap-half">
-      <h2 class="dialog__title">A priority for <%= @person.display_name %></h2>
+      <h2 class="dialog__title">A priority for <%= @person.display_name %> <span class="txt-subtle font-weight-normal"><%= @date == Date.current ? "today" : l(@date, format: "%a %-d %b") %></span></h2>
       <button type="button" class="btn btn--plain txt-small" data-action="dialog#close">
         <%= icon_tag "close" %>
         <span class="for-screen-reader">Close (Esc)</span>

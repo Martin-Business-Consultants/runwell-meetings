@@ -1,0 +1,94 @@
+<% week = @week %>
+<% @page_title = "Team week" %>
+<%= render "meetings/nav", current: :week %>
+<% params_for = ->(date) { { date: date.iso8601, series_id: week.series&.id }.compact } %>
+
+<% content_for :index_filters do %>
+  <% if @all_series.any? || week.series %>
+    <%= render "layouts/shared/quick_filter", title: "Who…", param: :series_id, current: week.series&.id.to_s,
+          options: [ [ "Everyone", "" ] ] + (@all_series | [ week.series ].compact).map { [ "In #{it.title}", it.id.to_s ] } %>
+  <% end %>
+<% end %>
+<%= render "layouts/shared/index_toolbar" %>
+
+<div class="page-heading margin-block-end">
+  <div class="txt-align-start">
+    <p class="font-weight-bold margin-none"><%= week.label %><%= " · this week" if week.this_week? %></p>
+    <p class="txt-small txt-subtle margin-none"><%= week.done_count %> of <%= week.total_count %> priorities done across <%= pluralize week.people.size, "person", plural: "people" %></p>
+  </div>
+  <div class="page-heading__actions">
+    <%= link_to meetings_team_week_path(**params_for.(week.starts_on - 7)), class: "btn btn--circle", title: "The week before" do %>
+      <%= icon_tag "arrow-left" %>
+      <span class="for-screen-reader">The week before</span>
+    <% end %>
+    <% unless week.this_week? %>
+      <%= link_to "This week", meetings_team_week_path(**params_for.(Date.current)), class: "btn" %>
+    <% end %>
+    <%= link_to meetings_team_week_path(**params_for.(week.starts_on + 7)), class: "btn btn--circle", title: "The week after" do %>
+      <%= icon_tag "arrow-right" %>
+      <span class="for-screen-reader">The week after</span>
+    <% end %>
+  </div>
+</div>
+
+<% if week.people.any? %>
+  <div class="meetings-week-scroll">
+    <table class="meetings-week">
+      <thead>
+        <tr>
+          <th scope="col" class="meetings-week__corner"><span class="for-screen-reader">Person</span></th>
+          <% week.days.each do |day| %>
+            <%# herb:key day.iso8601 %>
+            <th scope="col" class="meetings-week__day <%= "meetings-week__day--today" if day == Date.current %>">
+              <%= link_to meetings_team_day_path(date: day.iso8601), class: "txt-ink" do %>
+                <span class="font-weight-bold"><%= l day, format: "%a" %></span>
+                <span class="txt-subtle"><%= l day, format: "%-d %b" %></span>
+              <% end %>
+            </th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% week.people.each do |person| %>
+          <%# herb:key person.id %>
+          <% mine = week.week_of(person) %>
+          <tr data-filter-target="item">
+            <th scope="row" class="meetings-week__person">
+              <span class="flex align-center gap-half">
+                <%= person_tag person %>
+                <span class="flex flex-column min-width txt-align-start">
+                  <span class="font-weight-bold overflow-ellipsis"><%= person.display_name %></span>
+                  <span class="txt-x-small txt-subtle"><%= mine.count(&:done?) %> of <%= mine.size %> done</span>
+                </span>
+              </span>
+            </th>
+            <% week.days.each do |day| %>
+              <%# herb:key day.iso8601 %>
+              <% priorities = week.priorities_for(person, day) %>
+              <% report = week.report_for(person, day) %>
+              <td class="meetings-week__cell <%= "meetings-week__cell--today" if day == Date.current %>">
+                <div class="meetings-week__cell-head">
+                  <%= link_to meetings_day_path(day.iso8601, person.id), class: "txt-x-small txt-subtle", title: "#{person.display_name}’s day" do %>
+                    <%= priorities.any? ? "#{priorities.count(&:done?)}/#{priorities.size}" : "—" %>
+                  <% end %>
+                  <% if report %>
+                    <%= link_to meetings_day_path(day.iso8601, person.id), class: "meetings-week__reported txt-x-small", title: "Reported on the day" do %>
+                      <%= icon_tag "check" %>
+                      <span class="for-screen-reader">Reported</span>
+                    <% end %>
+                  <% end %>
+                  <%= render "meetings/add_priority", person: person, date: day %>
+                </div>
+                <% if priorities.any? %>
+                  <%= render "meetings/priorities", priorities: priorities %>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="blank-slate">Nobody is in that meeting.</div>
+<% end %>

@@ -309,7 +309,6 @@
 /* row you're on. Team day: a card per person, its + menu of work to pick from. */
 @layer components {
   .meetings-priority {
-    cursor: grab;
     position: relative;
   }
 
@@ -409,5 +408,119 @@
   .meetings-pick-menu__line {
     border-block-start: 1px solid var(--color-ink-lighter);
     padding-block-start: var(--block-space-half);
+  }
+}
+
+/* Team week: a row per person, a column per day, each cell that day's priorities. It scrolls
+/* sideways on its own when the days don't fit, the people staying in view. */
+@layer components {
+  .meetings-week-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .meetings-week {
+    border-collapse: separate;
+    border-spacing: 0;
+    inline-size: 100%;
+    min-inline-size: 52rem;
+    table-layout: fixed;
+    text-align: start;
+  }
+
+  .meetings-week__corner,
+  .meetings-week__person {
+    background: var(--color-canvas);
+    inline-size: 9rem;
+    inset-inline-start: 0;
+    position: sticky;
+    z-index: 1;
+  }
+
+  .meetings-week__day {
+    font-size: var(--text-small);
+    font-weight: normal;
+    padding: var(--block-space-half) var(--inline-space);
+    text-align: start;
+
+    a {
+      display: flex;
+      gap: 0.5ch;
+      text-decoration: none;
+    }
+  }
+
+  .meetings-week__day--today,
+  .meetings-week__cell--today {
+    background: var(--color-selected-light);
+  }
+
+  .meetings-week__person {
+    border-block-start: 1px solid var(--color-ink-lighter);
+    font-size: var(--text-small);
+    font-weight: normal;
+    padding: var(--block-space-half) var(--inline-space) var(--block-space-half) 0;
+    vertical-align: top;
+  }
+
+  .meetings-week__cell {
+    border-block-start: 1px solid var(--color-ink-lighter);
+    border-inline-start: 1px solid var(--color-ink-lighter);
+    padding: calc(var(--block-space-half) / 2) var(--inline-space);
+    vertical-align: top;
+
+    .meetings-priority {
+      font-size: var(--text-small);
+      gap: 0.5ch;
+    }
+
+    .meetings-priority__body .txt-x-small,
+    .meetings-priority .status-tag {
+      display: none;
+    }
+
+    .meetings-priority__title {
+      hyphens: auto;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+
+    /* Room for the words: the grip and × show on the row you're on, the × over its end. */
+    .meetings-priority__handle {
+      display: none;
+    }
+
+    .meetings-priority__remove {
+      background: var(--color-canvas);
+      inset-inline-end: 0;
+      opacity: 0;
+      position: absolute;
+    }
+
+    .meetings-priority:is(:hover, :focus-within) {
+      .meetings-priority__handle { display: block; }
+      .meetings-priority__remove { opacity: 1; }
+    }
+  }
+
+  .meetings-week__cell-head {
+    align-items: center;
+    display: flex;
+    gap: 0.5ch;
+    min-block-size: 2rem;
+
+    .meetings-add-priority .btn--circle {
+      --btn-size: 1.6rem;
+
+      opacity: 0.35;
+    }
+  }
+
+  .meetings-week__cell:is(:hover, :focus-within) .meetings-add-priority .btn--circle {
+    opacity: 1;
+  }
+
+  .meetings-week__reported {
+    color: var(--color-positive);
   }
 }

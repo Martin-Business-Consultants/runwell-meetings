@@ -1,15 +1,21 @@
 <%# locals: (priority:) %>
-<%# One priority in a list (meetings/priorities): work links to itself and shows its status; a
-    line of one's own is ticked off here. Drag it to reorder. %>
-<li class="meetings-priority <%= "meetings-priority--done" if priority.done? %>" data-filter-target="item" draggable="true" data-drag-and-drop-target="item" data-id="<%= priority.id %>">
-  <span class="meetings-priority__handle" aria-hidden="true" title="Drag to reorder"></span>
+<%# One priority in a list (meetings/priorities). The grip drags it to a new place (only the grip:
+    the rest of the row stays clickable); the circle changes its status: work's through the core's
+    status picker (todos/status_dot, where the core has it), a line of one's own done or not. %>
+<li class="meetings-priority <%= "meetings-priority--done" if priority.done? %>" data-filter-target="item" data-drag-and-drop-target="item" data-id="<%= priority.id %>">
+  <span class="meetings-priority__handle" draggable="true" title="Drag to reorder"><span class="for-screen-reader">Drag to reorder</span></span>
   <% if priority.todo %>
-    <span class="meetings-priority__mark" title="<%= priority.status_label %>"><span class="status-dot status-dot--<%= priority.todo.status.dasherize %>" aria-hidden="true"></span></span>
+    <span class="meetings-priority__mark">
+      <% if lookup_context.exists?("todos/status_dot", [], true) %>
+        <%= render "todos/status_dot", todo: priority.todo %>
+      <% else %>
+        <span class="status-dot status-dot--<%= priority.todo.status.dasherize %>" title="<%= priority.status_label %>"></span>
+      <% end %>
+    </span>
     <div class="meetings-priority__body">
-      <%= link_to priority.todo.title, todo_path(priority.todo), class: "txt-ink meetings-priority__title", data: { turbo_frame: "_top" } %>
+      <%= link_to priority.todo.title, todo_path(priority.todo), class: "txt-ink meetings-priority__title", draggable: "false", data: { turbo_frame: "_top" } %>
       <span class="txt-x-small txt-subtle"><%= priority.todo.engagement.client.name %> · <%= priority.todo.engagement.ref %></span>
     </div>
-    <%= status_tag priority.status_label %>
   <% else %>
     <%= button_to meetings_priority_path(priority), method: :patch, params: { priority: { done: !priority.done? } },
           class: "btn btn--plain meetings-priority__mark", form: { data: { turbo_frame: "_top" } }, title: (priority.done? ? "Not done yet" : "Done") do %>
