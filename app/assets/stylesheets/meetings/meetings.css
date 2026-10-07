@@ -60,6 +60,7 @@
 
   .meetings-person {
     display: flex;
+    padding-block-end: var(--block-space-half);
     flex-direction: column;
     gap: var(--block-space-half);
   }
@@ -106,8 +107,11 @@
   }
 
   .meetings-priority__mark {
+    align-items: center;
     color: var(--color-ink-medium);
+    display: inline-flex;
     flex: none;
+    font-size: var(--text-medium);
   }
 
   .meetings-priority--done {
@@ -119,6 +123,7 @@
     .meetings-priority__mark {
       color: var(--color-positive);
     }
+
   }
 
   .meetings-priority__remove {
@@ -308,11 +313,15 @@
     position: relative;
   }
 
+  /* A grip of six dots: the row can be dragged. */
   .meetings-priority__handle {
-    color: var(--color-ink-medium);
+    background-image: radial-gradient(circle, var(--color-ink-medium) 1.2px, transparent 1.6px);
+    background-size: 5px 5px;
+    block-size: 15px;
     cursor: grab;
     flex: none;
-    opacity: 0.4;
+    inline-size: 10px;
+    opacity: 0.35;
   }
 
   .meetings-priority:is(:hover, :focus-within) .meetings-priority__handle {

@@ -12,7 +12,7 @@
 <%= render "layouts/shared/index_toolbar" %>
 
 <div class="page-heading margin-block-end">
-  <div>
+  <div class="txt-align-start">
     <p class="font-weight-bold margin-none"><%= team.label %><%= " · today" if team.today? %></p>
     <p class="txt-small txt-subtle margin-none"><%= team.done_count %> of <%= team.total_count %> priorities done across <%= pluralize team.people.size, "person", plural: "people" %></p>
   </div>

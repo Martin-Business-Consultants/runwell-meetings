@@ -2,9 +2,9 @@
 <%# One priority in a list (meetings/priorities): work links to itself and shows its status; a
     line of one's own is ticked off here. Drag it to reorder. %>
 <li class="meetings-priority <%= "meetings-priority--done" if priority.done? %>" data-filter-target="item" draggable="true" data-drag-and-drop-target="item" data-id="<%= priority.id %>">
-  <span class="meetings-priority__handle" aria-hidden="true" title="Drag to reorder"><%= icon_tag "move" %></span>
+  <span class="meetings-priority__handle" aria-hidden="true" title="Drag to reorder"></span>
   <% if priority.todo %>
-    <span class="meetings-priority__mark" aria-hidden="true"><%= icon_tag(priority.done? ? "check-circle" : "check") %></span>
+    <span class="meetings-priority__mark" title="<%= priority.status_label %>"><span class="status-dot status-dot--<%= priority.todo.status.dasherize %>" aria-hidden="true"></span></span>
     <div class="meetings-priority__body">
       <%= link_to priority.todo.title, todo_path(priority.todo), class: "txt-ink meetings-priority__title", data: { turbo_frame: "_top" } %>
       <span class="txt-x-small txt-subtle"><%= priority.todo.engagement.client.name %> · <%= priority.todo.engagement.ref %></span>
@@ -13,7 +13,7 @@
   <% else %>
     <%= button_to meetings_priority_path(priority), method: :patch, params: { priority: { done: !priority.done? } },
           class: "btn btn--plain meetings-priority__mark", form: { data: { turbo_frame: "_top" } }, title: (priority.done? ? "Not done yet" : "Done") do %>
-      <%= icon_tag(priority.done? ? "check-circle" : "check") %>
+      <span class="status-dot status-dot--<%= priority.done? ? "done" : "planned" %>" aria-hidden="true"></span>
       <span class="for-screen-reader"><%= priority.done? ? "Mark not done" : "Mark done" %></span>
     <% end %>
     <div class="meetings-priority__body">
