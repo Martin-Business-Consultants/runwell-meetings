@@ -1,0 +1,38 @@
+<%# locals: () %>
+<%# Home: your priorities for today, and from the afternoon on, a nudge to say how the day went. %>
+<% day = Meetings::Day.new(Current.user, Date.current) %>
+<% meeting = day.meetings.find { it.starts_at >= 1.hour.ago } %>
+<% if day.priorities.any? || meeting || Time.current.hour >= 15 %>
+  <section class="panel shadow txt-align-start settings__section home-panel">
+    <header class="home-panel__header">
+      <h2 class="home-panel__title">
+        <%= link_to "Your priorities today", meetings_today_path, class: "txt-ink" %>
+        <span class="txt-subtle"><%= day.done_count %> of <%= day.priorities.size %> done</span>
+      </h2>
+    </header>
+    <% if day.priorities.any? %>
+      <ul class="meetings-priorities">
+        <% day.priorities.each do |priority| %>
+          <%# herb:key priority.id %>
+          <%= render "meetings/priority", priority: priority %>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="txt-small txt-subtle margin-none">None set. <%= link_to "Pick a few", meetings_today_path, class: "txt-link" %> from your open <%= term(:work).downcase %>.</p>
+    <% end %>
+    <div class="section-actions">
+      <% if meeting %>
+        <%= link_to meetings_meeting_path(meeting), class: "btn txt-small" do %>
+          <%= icon_tag "everyone" %>
+          <span><%= meeting.title %> at <%= l meeting.starts_at.in_time_zone, format: "%H:%M" %></span>
+        <% end %>
+      <% end %>
+      <% if Time.current.hour >= 15 && day.report.nil? %>
+        <%= link_to meetings_today_path, class: "btn txt-small" do %>
+          <%= icon_tag "pencil" %>
+          <span>How did today go?</span>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

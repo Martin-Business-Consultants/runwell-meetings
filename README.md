@@ -1,40 +1,41 @@
-# Runwell plugin template
+# Meetings, a Runwell plugin
 
-A working [Runwell](https://github.com/Martin-Business-Consultants/runwellv2) plugin to start
-yours from. It pins short items to clients, and in doing so uses every common part of the plugin
-contract:
+A team's daily rhythm in [Runwell](https://github.com/Martin-Business-Consultants/runwellv2):
 
-| Part | Where |
+- **My day**: each person picks the few things that matter today, from their open work or as a
+  line of their own (a call, an errand), and carries over what didn't get done yesterday.
+- **Meetings**: an agenda and notes, and the meeting room: everyone in the meeting with their
+  priorities for its day on the right, and open work to pick from on the left. Search either side;
+  add work to anyone's day from its + menu. "Plan the next one" repeats it on the next weekday.
+- **End-of-day report**: what went well, what didn't, why, and what's next, read beside the day's
+  priorities, done or not. Reports shows the whole team's for a day, or one person's month.
+
+Home shows your priorities for today, your next meeting, and from 3pm a nudge to report.
+
+Work done or not comes from the work itself (its status); lines of one's own are ticked off here.
+
+## Tables
+
+| Table | Holds |
 | --- | --- |
-| Manifest, slots, nav, permission, stylesheet, nightly task | `lib/my_plugin/engine.rb` |
-| Routes joined to the app's | `lib/my_plugin/engine.rb` (`my_plugin.routes`) |
-| An association on a core model | `lib/my_plugin/engine.rb` (`:runwell_client`) |
-| Listening to the core's events | `lib/my_plugin/engine.rb` (`event.runwell`) |
-| Its own table | `db/migrate`, `app/models/my_plugin/item.rb` |
-| A tab on every client | `app/views/my_plugin/slots/_client_panel.html.erb` |
-| A page, with agent tools and a JSON view for AI | `app/controllers/my_plugin/items_controller.rb`, `app/views/my_plugin/items` |
-| CSS on Runwell's design tokens | `app/assets/stylesheets/my_plugin/items.css` |
+| `meetings_meetings` | Title, start, agenda, notes |
+| `meetings_attendees` | Who's in each meeting (`user_id`) |
+| `meetings_priorities` | One person's priority for one day: a `todo_id`, or a `title` of their own |
+| `meetings_reports` | One person's report for one day |
 
-## Start
+## Agent tools
 
-1. Use this template on GitHub (or clone it) as `runwell-<your-plugin>`.
-2. `bin/rename "Plant care"`: the key, module, tables and files take your name.
-3. Set `author` and `homepage` in the gemspec and `lib/<key>/engine.rb`.
-4. From a Runwell checkout beside it: `bin/rails "plugins:link[../runwell-plant-care]"`,
-   `bin/rails db:migrate`, `bin/dev`, then switch it on in Settings › Plugins.
+`show_day`, `add_priority`, `update_priority`, `remove_priority`, `carry_over_priorities`,
+`list_meetings`, `show_meeting`, `plan_meeting`, `update_meeting`, `plan_next_meeting`,
+`delete_meeting`, `list_daily_reports`, `save_daily_report`, and the agent workflow
+"Plan the day and report on it".
+
+## Develop
+
+From a Runwell checkout beside it: `bin/rails "plugins:link[../runwell-meetings]"`,
+`bin/rails db:migrate`, `bin/dev`, then switch it on in Settings › Plugins.
 
 ## Release
 
-Bump `lib/<key>/version.rb`, commit, then `git tag v0.2.0 && git push --tags`. The workflow
-publishes the release; installs see it in Settings › Plugins (or the next night) and update when
-someone presses Update. Anyone installs it from Settings › Plugins by `owner/repo`.
-
-## Read next
-
-- [The plugin contract](https://github.com/Martin-Business-Consultants/runwellv2/blob/main/docs/plugin-contract.md):
-  every extension point, its version and whether it's stable. Set `requires:` to the newest you use.
-- [Plugins](https://github.com/Martin-Business-Consultants/runwellv2/blob/main/docs/plugins.md):
-  installing, developing and releasing.
-- [Theming](https://github.com/Martin-Business-Consultants/runwellv2/blob/main/docs/theming.md):
-  the design tokens.
-- `AGENTS.md` here: the rules for an AI working on the plugin.
+Bump `lib/meetings/version.rb`, commit, then `git tag v0.1.0 && git push --tags`. The workflow
+publishes the release; installs see it in Settings › Plugins and update when someone presses Update.

@@ -1,0 +1,163 @@
+<% @page_title = @meeting.title %>
+
+<% content_for :header do %>
+  <%= parent_page "Meetings", meetings_meetings_path %>
+<% end %>
+<%= render "meetings/nav", current: :meetings %>
+
+<div class="meetings-room">
+  <div class="page-heading">
+    <div>
+      <h1 class="page-title"><%= @page_title %></h1>
+      <p class="record-meta txt-small txt-subtle margin-none">
+        <%= @meeting.when_label %> · priorities for <%= l @meeting.day, format: :long %> · <%= pluralize @meeting.people.size, "person" %>
+      </p>
+    </div>
+    <div class="page-heading__actions">
+      <%= button_to plan_next_meetings_meeting_path(@meeting), class: "btn btn--circle-mobile" do %>
+        <%= icon_tag "add" %>
+        <span>Plan the next one</span>
+      <% end %>
+      <%= link_to edit_meetings_meeting_path(@meeting), class: "btn btn--circle-mobile", data: { keys: "e" } do %>
+        <%= icon_tag "pencil" %>
+        <span>Edit</span>
+        <kbd class="hide-on-touch">E</kbd>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="meetings-room__columns">
+    <section class="meetings-room__column">
+      <form action="<%= meetings_meeting_path(@meeting) %>" method="get" class="meetings-room__search" data-turbo-frame="meeting_todos" data-turbo-action="advance" data-controller="form">
+        <label for="meeting_todos_q" class="meetings-room__label"><%= term(:work) %></label>
+        <input type="search" name="q" id="meeting_todos_q" value="<%= @todos_query %>" class="input" placeholder="Search all open <%= term(:work).downcase %>" autocomplete="off" data-action="input->form#debouncedSubmit">
+        <input type="hidden" name="who" value="<%= @people_query %>">
+      </form>
+      <turbo-frame id="meeting_todos" class="panel shadow meetings-room__panel">
+        <% if @todos.any? %>
+          <ul class="meetings-picks">
+            <% @todos.each do |todo| %>
+              <%# herb:key todo.id %>
+              <li class="meetings-pick" data-filter-target="item">
+                <div class="meetings-pick__body">
+                  <%= link_to todo.title, todo_path(todo), class: "txt-ink meetings-priority__title", data: { turbo_frame: "_top" } %>
+                  <span class="txt-x-small txt-subtle">
+                    <%= todo.engagement.client.name %> · <%= todo.engagement.ref %><% if todo.due_on %> · due <%= l todo.due_on, format: :short %><% end %>
+                  </span>
+                </div>
+                <%= person_tag todo.owner, fallback: "Unassigned" %>
+                <details class="meetings-pick__add">
+                  <summary class="btn txt-small"><%= icon_tag "add" %><span class="for-screen-reader">Add <%= todo.title %> to someone’s priorities</span></summary>
+                  <div class="meetings-pick__menu panel shadow">
+                    <p class="txt-x-small txt-subtle margin-none">A priority for…</p>
+                    <% @priorities.keys.sort_by { it.id == todo.owner_id ? 0 : 1 }.each do |person| %>
+                      <%# herb:key person.id %>
+                      <%= button_to meetings_priorities_path, params: { priority: { todo_id: todo.id, user_id: person.id, day: @meeting.day.iso8601 } },
+                            class: "btn btn--plain txt-small meetings-pick__person", form: { data: { turbo_frame: "_top" } } do %>
+                        <%= person_tag person %>
+                        <span><%= person.display_name %></span>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </details>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="blank-slate">
+            <% if @todos_query.present? %>
+              No open <%= term(:work).downcase %> matches “<%= @todos_query %>”.
+            <% else %>
+              Nobody in this meeting has open <%= term(:work).downcase %> left to pick. Search above for anyone’s.
+            <% end %>
+          </div>
+        <% end %>
+      </turbo-frame>
+    </section>
+
+    <section class="meetings-room__column">
+      <form action="<%= meetings_meeting_path(@meeting) %>" method="get" class="meetings-room__search" data-turbo-frame="meeting_people" data-turbo-action="advance" data-controller="form">
+        <label for="meeting_people_who" class="meetings-room__label">Meeting</label>
+        <input type="search" name="who" id="meeting_people_who" value="<%= @people_query %>" class="input" placeholder="Search people and priorities" autocomplete="off" data-action="input->form#debouncedSubmit">
+        <input type="hidden" name="q" value="<%= @todos_query %>">
+      </form>
+      <turbo-frame id="meeting_people" class="panel shadow meetings-room__panel">
+        <% needle = @people_query.downcase %>
+        <% shown = 0 %>
+        <% @priorities.each do |person, priorities| %>
+          <%# herb:key person.id %>
+          <% matches_person = needle.empty? || person.display_name.downcase.include?(needle) %>
+          <% listed = matches_person ? priorities : priorities.select { it.label.to_s.downcase.include?(needle) } %>
+          <% if matches_person || listed.any? %>
+            <% shown += 1 %>
+            <section class="meetings-person">
+              <header class="meetings-person__header">
+                <%= person_tag person, size: :large %>
+                <%= link_to person.display_name, meetings_day_path(@meeting.day.iso8601, user_id: person.id), class: "txt-ink font-weight-bold", data: { turbo_frame: "_top" } %>
+                <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> done</span>
+              </header>
+              <% if listed.any? %>
+                <ul class="meetings-priorities">
+                  <% listed.each do |priority| %>
+                    <%# herb:key priority.id %>
+                    <%= render "meetings/priority", priority: priority %>
+                  <% end %>
+                </ul>
+              <% else %>
+                <p class="txt-small txt-subtle margin-none">No priorities yet. Pick from the <%= term(:work).downcase %> on the left, or add a line.</p>
+              <% end %>
+              <details class="meetings-person__add">
+                <summary class="btn btn--plain txt-x-small txt-subtle"><%= icon_tag "add" %><span>Add a line</span></summary>
+                <%= form_with url: meetings_priorities_path, scope: :priority, class: "flex gap-half txt-small", namespace: "meeting_person_#{person.id}", data: { turbo_frame: "_top" } do |form| %>
+                  <%= form.hidden_field :user_id, value: person.id %>
+                  <%= form.hidden_field :day, value: @meeting.day.iso8601 %>
+                  <%= form.text_field :title, class: "input flex-item-grow", placeholder: "Something that isn’t #{term(:work).downcase}", required: true, maxlength: 200, autocomplete: "off" %>
+                  <button type="submit" class="btn txt-small">Add</button>
+                <% end %>
+              </details>
+            </section>
+          <% end %>
+        <% end %>
+        <% if shown.zero? %>
+          <div class="blank-slate">
+            <% if @priorities.empty? %>
+              Nobody is in this meeting yet. <%= link_to "Add people", edit_meetings_meeting_path(@meeting), class: "txt-link", data: { turbo_frame: "_top" } %>.
+            <% else %>
+              Nobody and nothing matches “<%= @people_query %>”.
+            <% end %>
+          </div>
+        <% end %>
+      </turbo-frame>
+    </section>
+  </div>
+
+  <div class="meetings-room__columns">
+    <section class="panel shadow txt-align-start settings__section">
+      <header>
+        <h2 class="divider">Agenda</h2>
+      </header>
+      <% if @meeting.agenda.present? %>
+        <div class="txt-small"><%= rich_text @meeting.agenda %></div>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">No agenda yet. <%= link_to "Write one", edit_meetings_meeting_path(@meeting), class: "txt-link" %>: what to decide, and who brings what.</p>
+      <% end %>
+    </section>
+
+    <section class="panel shadow txt-align-start settings__section">
+      <header>
+        <h2 class="divider">Notes</h2>
+      </header>
+      <% if @meeting.notes.present? %>
+        <div class="txt-small"><%= rich_text @meeting.notes %></div>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">Nothing noted yet. <%= link_to "Take notes", edit_meetings_meeting_path(@meeting), class: "txt-link" %> as it goes: decisions, and who does what.</p>
+      <% end %>
+    </section>
+  </div>
+
+  <% if @meeting.deletable_by?(Current.user) %>
+    <div class="meetings-room__foot">
+      <%= render "layouts/shared/confirm", trigger: "Delete the meeting", title: "Delete #{@meeting.title}?", body: "Its agenda and notes go for good. Everyone’s priorities stay on their day.", button: "Delete it", path: meetings_meeting_path(@meeting) %>
+    </div>
+  <% end %>
+</div>

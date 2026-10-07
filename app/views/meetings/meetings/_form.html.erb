@@ -1,0 +1,56 @@
+<%# locals: (meeting:) %>
+<%= render "layouts/shared/errors", record: meeting %>
+<% people = User.active.people.ordered.to_a %>
+<% chosen = meeting.person_ids %>
+
+<%= form_with model: meeting, url: (meeting.persisted? ? meetings_meeting_path(meeting) : meetings_meetings_path), scope: :meeting, class: "record-form", data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
+  <label class="record-form__field">
+    <span class="record-form__label">What it’s for</span>
+    <%= form.text_field :title, required: true, class: "input full-width", autocomplete: "off", autofocus: meeting.new_record?, placeholder: "Morning huddle, weekly review…" %>
+  </label>
+
+  <div class="record-form__row">
+    <label class="record-form__field">
+      <span class="record-form__label">Day</span>
+      <%= date_input form, :starts_on, required: true, class: "input full-width" %>
+      <span class="record-form__hint">It shows everyone’s priorities for this day.</span>
+    </label>
+    <label class="record-form__field">
+      <span class="record-form__label">Starts</span>
+      <%= form.time_field :starts_at_time, required: true, class: "input full-width" %>
+      <span class="record-form__hint">Our time, <%= Time.zone.name %>.</span>
+    </label>
+  </div>
+
+  <fieldset class="record-form__field meetings-people-picker">
+    <legend class="record-form__label">Who’s in it</legend>
+    <%= hidden_field_tag "meeting[person_ids][]", "" %>
+    <% people.each do |person| %>
+      <%# herb:key person.id %>
+      <label class="meetings-people-picker__person">
+        <%= check_box_tag "meeting[person_ids][]", person.id, chosen.include?(person.id), id: "meeting_person_#{person.id}" %>
+        <%= person_tag person %>
+        <span><%= person.display_name %></span>
+      </label>
+    <% end %>
+  </fieldset>
+
+  <div class="record-form__field">
+    <span class="record-form__label">Agenda</span>
+    <%= rich_text_field form, :agenda, placeholder: "What to decide, and who brings what.", staff: true %>
+  </div>
+
+  <% if meeting.persisted? %>
+    <div class="record-form__field">
+      <span class="record-form__label">Notes</span>
+      <%= rich_text_field form, :notes, placeholder: "What was decided, and who does what.", staff: true %>
+    </div>
+  <% end %>
+
+  <div class="record-form__footer">
+    <%= link_to "Cancel", (meeting.persisted? ? meetings_meeting_path(meeting) : meetings_meetings_path), class: "btn btn--plain record-form__cancel", data: { form_target: "cancel" } %>
+    <button type="submit" class="btn btn--link" data-form-target="submit">
+      <span><%= meeting.persisted? ? "Save changes" : "Plan the meeting" %></span>
+    </button>
+  </div>
+<% end %>

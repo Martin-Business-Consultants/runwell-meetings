@@ -1,0 +1,11 @@
+<%# locals: (report:) %>
+<dl class="meetings-answers">
+  <% Meetings::Report::FIELDS.each do |field, (label, _hint)| %>
+    <%# herb:key field %>
+    <% answer = report.public_send(field) %>
+    <% if answer.present? %>
+      <dt><%= label %></dt>
+      <dd class="txt-small"><%= rich_text answer %></dd>
+    <% end %>
+  <% end %>
+</dl>

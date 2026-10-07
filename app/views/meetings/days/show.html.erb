@@ -1,0 +1,170 @@
+<% day = @day %>
+<% @page_title = @mine ? "My day" : "#{day.user.display_name}’s day" %>
+<%= render "meetings/nav", current: :day, person: day.user %>
+
+<section class="settings settings--split">
+  <div class="settings__panel panel shadow txt-align-start">
+    <div class="page-heading">
+      <div>
+        <h1 class="page-title"><%= @page_title %></h1>
+        <p class="record-meta txt-small txt-subtle margin-none"><%= day.label %><%= " · today" if day.today? %></p>
+      </div>
+      <div class="page-heading__actions">
+        <%= link_to meetings_day_path(day.date.prev_day.iso8601, user_id: day.user.id), class: "btn btn--circle", title: "The day before" do %>
+          <%= icon_tag "arrow-left" %>
+          <span class="for-screen-reader">The day before</span>
+        <% end %>
+        <% unless day.today? %>
+          <%= link_to "Today", meetings_day_path(Date.current.iso8601, user_id: day.user.id), class: "btn" %>
+        <% end %>
+        <%= link_to meetings_day_path(day.date.next_day.iso8601, user_id: day.user.id), class: "btn btn--circle", title: "The day after" do %>
+          <%= icon_tag "arrow-right" %>
+          <span class="for-screen-reader">The day after</span>
+        <% end %>
+      </div>
+    </div>
+
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">Priorities <span class="txt-subtle"><%= day.done_count %> of <%= day.priorities.size %> done</span></h2>
+      </header>
+      <% if day.priorities.any? %>
+        <ul class="meetings-priorities">
+          <% day.priorities.each do |priority| %>
+            <%# herb:key priority.id %>
+            <%= render "meetings/priority", priority: priority %>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">
+          <%= @mine ? "What has to get done #{day.today? ? "today" : "this day"}? Pick a few" : "No priorities set. Pick a few" %> from the open <%= term(:work).downcase %> below, or add a line for anything that isn’t <%= term(:work).downcase %>.
+        </p>
+      <% end %>
+
+      <div class="section-actions">
+        <% if day.carry_over.any? %>
+          <%= button_to carry_over_meetings_priorities_path, params: { user_id: day.user.id, day: day.date.iso8601 }, class: "btn txt-small" do %>
+            <%= icon_tag "refresh" %>
+            <span>Carry over <%= pluralize day.carry_over.size, "unfinished priority", plural: "unfinished priorities" %> from <%= l day.previous_workday, format: :short %></span>
+          <% end %>
+        <% end %>
+        <details>
+          <summary class="btn txt-small"><%= icon_tag "add" %><span>Add a line</span></summary>
+          <%= form_with url: meetings_priorities_path, scope: :priority, class: "flex gap-half txt-small margin-block-start-half", data: { turbo_action: "advance" } do |form| %>
+            <%= form.hidden_field :user_id, value: day.user.id %>
+            <%= form.hidden_field :day, value: day.date.iso8601 %>
+            <%= form.text_field :title, class: "input flex-item-grow", placeholder: "Something that isn’t work: a call, an errand", required: true, maxlength: 200, autocomplete: "off", autofocus: true %>
+            <button type="submit" class="btn txt-small">Add</button>
+          <% end %>
+        </details>
+      </div>
+    </section>
+
+    <% if day.open_work.any? %>
+      <section class="settings__section">
+        <header>
+          <h2 class="divider"><%= @mine ? "Your" : "Their" %> open <%= term(:work).downcase %> <span class="txt-subtle"><%= day.open_work.size %></span></h2>
+        </header>
+        <ul class="meetings-picks">
+          <% day.open_work.each do |todo| %>
+            <%# herb:key todo.id %>
+            <li class="meetings-pick" data-filter-target="item">
+              <div class="meetings-pick__body">
+                <%= link_to todo.title, todo_path(todo), class: "txt-ink meetings-priority__title" %>
+                <span class="txt-x-small txt-subtle">
+                  <%= todo.engagement.client.name %> · <%= todo.engagement.ref %> · <%= todo.status.humanize.downcase %><% if todo.due_on %> · due <%= l todo.due_on, format: :short %><% end %>
+                </span>
+              </div>
+              <%= button_to meetings_priorities_path, params: { priority: { todo_id: todo.id, user_id: day.user.id, day: day.date.iso8601 } }, class: "btn txt-small" do %>
+                <%= icon_tag "add" %>
+                <span>Priority</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">How the day went</h2>
+      </header>
+      <% report = day.report %>
+      <% if @mine %>
+        <% if report&.errors&.any? %>
+          <%= render "layouts/shared/errors", record: report %>
+        <% end %>
+        <%= form_with url: meetings_reports_path, scope: :report, class: "record-form", data: { controller: "form", turbo_action: "advance" } do |form| %>
+          <%= form.hidden_field :day, value: day.date.iso8601 %>
+          <% Meetings::Report::FIELDS.each do |field, (label, hint)| %>
+            <%# herb:key field %>
+            <div class="record-form__field">
+              <span class="record-form__label"><%= label %></span>
+              <%= rich_text_field_tag "report[#{field}]", report&.public_send(field), id: "report_#{field}", placeholder: hint %>
+            </div>
+          <% end %>
+          <div class="record-form__footer">
+            <button type="submit" class="btn btn--link" data-form-target="submit">
+              <span><%= report&.persisted? ? "Save changes" : "Save the report" %></span>
+            </button>
+          </div>
+        <% end %>
+      <% elsif report %>
+        <%= render "meetings/reports/answers", report: report %>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none"><%= day.user.display_name %> hasn’t reported on this day<%= " yet" if day.today? %>.</p>
+      <% end %>
+    </section>
+  </div>
+
+  <aside class="settings__panel settings__panel--side panel shadow txt-align-start">
+    <%= render "layouts/shared/sidebar_toggle" %>
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">Details</h2>
+      </header>
+      <dl class="record-facts">
+        <dt>Who</dt><dd><%= person_tag day.user %> <%= day.user.display_name %></dd>
+        <dt>Priorities</dt><dd><%= day.done_count %> of <%= day.priorities.size %> done</dd>
+        <dt>Report</dt><dd><%= day.report&.persisted? ? "Written #{l day.report.updated_at, format: :short}" : "Not yet" %></dd>
+      </dl>
+    </section>
+
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">Meetings</h2>
+      </header>
+      <% if day.meetings.any? %>
+        <ul class="settings__scrollable-list">
+          <% day.meetings.each do |meeting| %>
+            <%# herb:key meeting.id %>
+            <li class="flex align-center gap-half txt-small">
+              <%= link_to meeting.title, meetings_meeting_path(meeting), class: "txt-ink overflow-ellipsis min-width" %>
+              <hr class="separator--horizontal flex-item-grow txt-subtle" aria-hidden="true">
+              <span class="txt-subtle txt-nowrap"><%= l meeting.starts_at.in_time_zone, format: "%H:%M" %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">No meetings this day.</p>
+      <% end %>
+      <div class="section-actions">
+        <%= link_to new_meetings_meeting_path, class: "btn txt-small" do %>
+          <%= icon_tag "add" %>
+          <span>Plan a meeting</span>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">A good day</h2>
+      </header>
+      <ol class="record-steps txt-small">
+        <li>In the morning, pick the few things that matter most. Fewer is better.</li>
+        <li>In the meeting, everyone sees each other’s, and picks up what’s missing.</li>
+        <li>At the end of the day, say what went well, what didn’t, and why. Tomorrow starts from it.</li>
+      </ol>
+    </section>
+  </aside>
+</section>

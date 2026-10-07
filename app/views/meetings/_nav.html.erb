@@ -1,0 +1,18 @@
+<%# locals: (current:, person: nil) %>
+<%# The Meetings sidebar beside every page of the plugin: your day, the meetings, the team's
+    reports, then each person's day. %>
+<% content_for :header do %>
+  <h1 class="header__title">Meetings</h1>
+<% end %>
+<% me = Current.user.person %>
+<% section_nav "Meetings" do %>
+  <%= section_nav_link "My day", meetings_today_path, icon: "check-circle", current: current == :day && person == me %>
+  <%= section_nav_link "Meetings", meetings_meetings_path, icon: "everyone", current: current == :meetings %>
+  <%= section_nav_link "Reports", meetings_reports_path, icon: "activity", current: current == :reports %>
+
+  <%= section_nav_heading "The team’s days" %>
+  <% User.active.people.ordered.where.not(id: me.id).each do |user| %>
+    <%# herb:key user.id %>
+    <%= section_nav_link user.display_name, meetings_day_path(Date.current.iso8601, user_id: user.id), icon: "person", current: current == :day && person == user %>
+  <% end %>
+<% end %>

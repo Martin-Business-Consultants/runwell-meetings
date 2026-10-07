@@ -1,0 +1,72 @@
+<% @page_title = "Reports" %>
+<%= render "meetings/nav", current: :reports %>
+
+<% content_for :index_filters do %>
+  <%= render "layouts/shared/quick_filter", title: "Whose…", param: :user_id, current: @person&.id.to_s,
+        options: [ [ "Everyone’s", "" ] ] + @people.map { [ it.display_name, it.id.to_s ] } %>
+<% end %>
+<%= render "layouts/shared/index_toolbar" %>
+
+<% if @person %>
+  <section class="meetings-reports">
+    <% if @reports.any? %>
+      <% @reports.each do |report| %>
+        <%# herb:key report.id %>
+        <% priorities = @priorities.fetch(report.day, []) %>
+        <article class="panel shadow txt-align-start meetings-report" data-filter-target="item">
+          <header class="meetings-report__header">
+            <%= link_to l(report.day, format: :long), meetings_day_path(report.day.iso8601, user_id: @person.id), class: "txt-ink font-weight-bold" %>
+            <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> priorities done</span>
+          </header>
+          <%= render "meetings/reports/answers", report: report %>
+        </article>
+      <% end %>
+    <% else %>
+      <div class="blank-slate"><%= @person.display_name %> hasn’t reported in the last 30 days.</div>
+    <% end %>
+  </section>
+<% else %>
+  <div class="page-heading margin-block-end">
+    <p class="font-weight-bold margin-none"><%= l @date, format: :long %></p>
+    <div class="page-heading__actions">
+      <%= link_to meetings_reports_path(date: @date.prev_day.iso8601), class: "btn btn--circle", title: "The day before" do %>
+        <%= icon_tag "arrow-left" %>
+        <span class="for-screen-reader">The day before</span>
+      <% end %>
+      <% unless @date == Date.current %>
+        <%= link_to "Today", meetings_reports_path, class: "btn" %>
+      <% end %>
+      <%= link_to meetings_reports_path(date: @date.next_day.iso8601), class: "btn btn--circle", title: "The day after" do %>
+        <%= icon_tag "arrow-right" %>
+        <span class="for-screen-reader">The day after</span>
+      <% end %>
+    </div>
+  </div>
+
+  <section class="meetings-reports">
+    <% @people.each do |person| %>
+      <%# herb:key person.id %>
+      <% report = @reports[person.id] %>
+      <% priorities = @priorities.fetch(person.id, []) %>
+      <% if report || priorities.any? %>
+        <article class="panel shadow txt-align-start meetings-report" data-filter-target="item">
+          <header class="meetings-report__header">
+            <%= person_tag person, size: :large %>
+            <%= link_to person.display_name, meetings_day_path(@date.iso8601, user_id: person.id), class: "txt-ink font-weight-bold" %>
+            <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> priorities done</span>
+          </header>
+          <% if report %>
+            <%= render "meetings/reports/answers", report: report %>
+          <% else %>
+            <p class="txt-small txt-subtle margin-none">No report yet.</p>
+          <% end %>
+        </article>
+      <% end %>
+    <% end %>
+  </section>
+  <% if @reports.empty? && @priorities.empty? %>
+    <div class="blank-slate">
+      Nobody set priorities or reported on <%= l @date, format: :long %>. Each person reports at the end of their day, on <%= link_to "My day", meetings_today_path, class: "txt-link" %>.
+    </div>
+  <% end %>
+<% end %>

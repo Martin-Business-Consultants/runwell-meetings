@@ -1,0 +1,58 @@
+<% @page_title = "Meetings" %>
+<%= render "meetings/nav", current: :meetings %>
+
+<% content_for :index_filters do %>
+  <%= render "layouts/shared/quick_filter", title: "Show…", param: :state, current: @state,
+        options: [ [ "Upcoming", "upcoming" ], [ "Past", "past" ], [ "All", "all" ] ] %>
+  <%= render "layouts/shared/quick_filter", title: "With…", param: :mine, current: @mine ? "1" : "",
+        options: [ [ "Anyone", "" ], [ "Me", "1" ] ] %>
+<% end %>
+<%= render "layouts/shared/index_toolbar", view: @view, new_text: "Plan a meeting", new_path: new_meetings_meeting_path %>
+
+<% if @meetings.any? %>
+  <% if @view == "cards" %>
+    <section class="cards cards--grid">
+      <% @meetings.each do |meeting| %>
+        <%# herb:key meeting.id %>
+        <%= render "layouts/shared/card", path: meetings_meeting_path(meeting), title: meeting.title, id_label: meeting.when_label,
+              meta: [ meeting.people.map(&:display_name).to_sentence ], status: (meeting.today? ? "Today" : nil), highlight: meeting.today? %>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="panel shadow center index-table">
+      <table class="data-table">
+        <thead>
+          <tr><th>Meeting</th><th>When</th><th>People</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% @meetings.each do |meeting| %>
+            <%# herb:key meeting.id %>
+            <tr data-filter-target="item">
+              <td class="font-weight-bold"><%= link_to meeting.title, meetings_meeting_path(meeting), class: "txt-ink" %></td>
+              <td class="txt-nowrap"><%= meeting.when_label %></td>
+              <td>
+                <span class="meetings-people">
+                  <% meeting.people.each do |person| %>
+                    <%# herb:key person.id %>
+                    <%= person_tag person %>
+                  <% end %>
+                </span>
+              </td>
+              <%= render "layouts/shared/row_actions", name: meeting.title, edit_path: edit_meetings_meeting_path(meeting),
+                    delete_path: (meetings_meeting_path(meeting) if meeting.deletable_by?(Current.user)) %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+<% else %>
+  <div class="blank-slate">
+    <% if Meetings::Meeting.none? %>
+      No meetings yet. Plan one: a daily huddle, a weekly review. It shows everyone in it with their priorities for the day, beside the <%= term(:work).downcase %> they can pick from.
+      <%= link_to "Plan a meeting", new_meetings_meeting_path, class: "txt-link" %>
+    <% else %>
+      No <%= @state == "all" ? "" : @state %> meetings.
+    <% end %>
+  </div>
+<% end %>

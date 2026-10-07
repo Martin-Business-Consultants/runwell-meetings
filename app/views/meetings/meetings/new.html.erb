@@ -1,0 +1,27 @@
+<% @page_title = "Plan a meeting" %>
+<% content_for :header do %>
+  <%= parent_page "Meetings", meetings_meetings_path %>
+<% end %>
+<%= render "meetings/nav", current: :meetings %>
+
+<section class="settings settings--split">
+  <div class="settings__panel panel shadow txt-align-start">
+    <h1 class="page-title"><%= @page_title %></h1>
+    <%= render "meetings/meetings/form", meeting: @meeting %>
+  </div>
+
+  <aside class="settings__panel settings__panel--side panel shadow txt-align-start">
+    <%= render "layouts/shared/sidebar_toggle" %>
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">What comes next</h2>
+      </header>
+      <ol class="record-steps txt-small">
+        <li>Everyone in it shows with their priorities for its day. They can set their own on My day before it starts.</li>
+        <li>In the meeting, pick more from anyone’s open <%= term(:work).downcase %>, or add a line that isn’t <%= term(:work).downcase %>.</li>
+        <li>Take notes as it goes. Plan the next one with one press: same time, same people, the next weekday.</li>
+        <li>At the end of the day, each person reports on how it went.</li>
+      </ol>
+    </section>
+  </aside>
+</section>

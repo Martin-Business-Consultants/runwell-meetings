@@ -1,0 +1,27 @@
+<%# locals: (priority:) %>
+<%# One priority in a list: work links to itself and shows its status; a line of one's own is
+    ticked off here. %>
+<li class="meetings-priority <%= "meetings-priority--done" if priority.done? %>" data-filter-target="item">
+  <% if priority.todo %>
+    <span class="meetings-priority__mark" aria-hidden="true"><%= icon_tag(priority.done? ? "check-circle" : "check") %></span>
+    <div class="meetings-priority__body">
+      <%= link_to priority.todo.title, todo_path(priority.todo), class: "txt-ink meetings-priority__title", data: { turbo_frame: "_top" } %>
+      <span class="txt-x-small txt-subtle"><%= priority.todo.engagement.client.name %> · <%= priority.todo.engagement.ref %></span>
+    </div>
+    <%= status_tag priority.status_label %>
+  <% else %>
+    <%= button_to meetings_priority_path(priority), method: :patch, params: { priority: { done: !priority.done? } },
+          class: "btn btn--plain meetings-priority__mark", form: { data: { turbo_frame: "_top" } }, title: (priority.done? ? "Not done yet" : "Done") do %>
+      <%= icon_tag(priority.done? ? "check-circle" : "check") %>
+      <span class="for-screen-reader"><%= priority.done? ? "Mark not done" : "Mark done" %></span>
+    <% end %>
+    <div class="meetings-priority__body">
+      <span class="meetings-priority__title"><%= priority.title %></span>
+    </div>
+  <% end %>
+  <%= button_to meetings_priority_path(priority), method: :delete, class: "btn btn--plain txt-subtle meetings-priority__remove",
+        form: { data: { turbo_frame: "_top" } }, title: "Take it off the day" do %>
+    <%= icon_tag "close" %>
+    <span class="for-screen-reader">Take <%= priority.label %> off the day</span>
+  <% end %>
+</li>

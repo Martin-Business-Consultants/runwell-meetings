@@ -1,4 +1,4 @@
-# A Runwell plugin — guide for AI agents
+# Meetings, a Runwell plugin — guide for AI agents
 
 This repository is a plugin for Runwell (a Rails 8.1 engine loaded into a Runwell install). It is
 not an app on its own: run it from a Runwell checkout with `bin/rails "plugins:link[path]"`.
@@ -10,11 +10,11 @@ Read first, in Runwell's repository:
 
 ## Rules
 
-- Own your tables, prefixed with the key (`my_plugin_*`), pointing at core records by id. Never
+- Own your tables, prefixed with the key (`meetings_*`), pointing at core records by id. Never
   add columns to core tables or write core rows except through core model verbs.
 - Register everything in `config.to_prepare`, keyed by the plugin's key. Controllers inherit
-  `MyPlugin::ApplicationController` (404 while switched off); subscribers check
-  `Runwell::Plugins.enabled?(:my_plugin)`.
+  `Meetings::ApplicationController` (404 while switched off); subscribers check
+  `Runwell::Plugins.enabled?(:meetings)`.
 - Every controller action declares an authorization rule (`allow_staff`, `require_permission`)
   and an `agent_tool` or `agent_exempt`. Reads get a `.json.jbuilder` view with `agent_ref` and a
   `summary`. Write notices an AI can act on.
@@ -29,7 +29,6 @@ Read first, in Runwell's repository:
 
 ## Layout
 
-- `lib/my_plugin/engine.rb`: routes, model hooks, event subscriber, registrations
-- `app/`: models, controllers, views, stylesheets under `my_plugin/`
+- `lib/meetings/engine.rb`: routes, model hooks, event subscriber, registrations
+- `app/`: models, controllers, views, stylesheets under `meetings/`
 - `db/migrate/`: the plugin's tables
-- `bin/rename`: renames the template (delete once used)

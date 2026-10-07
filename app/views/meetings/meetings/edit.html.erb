@@ -1,0 +1,26 @@
+<% @page_title = "Edit " + @meeting.title %>
+<% content_for :header do %>
+  <%= parent_page @meeting.title, meetings_meeting_path(@meeting) %>
+<% end %>
+<%= render "meetings/nav", current: :meetings %>
+
+<section class="settings settings--split">
+  <div class="settings__panel panel shadow txt-align-start">
+    <h1 class="page-title"><%= @page_title %></h1>
+    <%= render "meetings/meetings/form", meeting: @meeting %>
+  </div>
+
+  <aside class="settings__panel settings__panel--side panel shadow txt-align-start">
+    <%= render "layouts/shared/sidebar_toggle" %>
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">Details</h2>
+      </header>
+      <dl class="record-facts">
+        <dt>Planned by</dt><dd><%= person_tag @meeting.created_by, fallback: "Nobody" %></dd>
+        <dt>Starts</dt><dd><%= @meeting.when_label %></dd>
+        <dt>People</dt><dd><%= @meeting.people.size %></dd>
+      </dl>
+    </section>
+  </aside>
+</section>

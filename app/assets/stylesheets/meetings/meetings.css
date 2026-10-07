@@ -1,0 +1,238 @@
+/* Meetings: the meeting room (work beside each person's priorities), a day's priorities, and
+/* end-of-day reports. Runwell's design tokens (docs/theming.md), so themes reach it too. */
+@layer components {
+  .meetings-room {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space);
+    inline-size: 100%;
+    text-align: start;
+  }
+
+  .meetings-room__columns {
+    display: grid;
+    gap: var(--block-space);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @media (max-width: 800px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .meetings-room__column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space-half);
+    min-inline-size: 0;
+  }
+
+  .meetings-room__search {
+    align-items: center;
+    display: flex;
+    gap: var(--inline-space);
+
+    .input {
+      flex: 1 1 auto;
+      min-inline-size: 0;
+    }
+  }
+
+  .meetings-room__label {
+    font-size: var(--text-medium);
+    font-weight: 700;
+  }
+
+  .meetings-room__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space);
+    max-block-size: 70vh;
+    min-block-size: 20rem;
+    overflow-y: auto;
+    padding: var(--block-space);
+  }
+
+  .meetings-room__foot {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .meetings-person {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space-half);
+  }
+
+  .meetings-person__header {
+    align-items: center;
+    display: flex;
+    gap: var(--inline-space);
+  }
+
+  .meetings-priorities,
+  .meetings-picks {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .meetings-priority,
+  .meetings-pick {
+    align-items: center;
+    border-block-end: 1px solid var(--color-ink-lighter);
+    display: flex;
+    gap: var(--inline-space);
+    padding-block: calc(var(--block-space-half) / 2);
+
+    &:last-child {
+      border-block-end: 0;
+    }
+  }
+
+  .meetings-priority__body,
+  .meetings-pick__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  .meetings-priority__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meetings-priority__mark {
+    color: var(--color-ink-medium);
+    flex: none;
+  }
+
+  .meetings-priority--done {
+    .meetings-priority__title {
+      color: var(--color-ink-dark);
+      text-decoration: line-through;
+    }
+
+    .meetings-priority__mark {
+      color: var(--color-positive);
+    }
+  }
+
+  .meetings-priority__remove {
+    flex: none;
+    opacity: 0.5;
+
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  .meetings-pick__add {
+    flex: none;
+    position: relative;
+
+    > summary {
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+  }
+
+  .meetings-pick__menu {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--block-space-half) / 2);
+    inset-block-start: calc(100% + 0.25rem);
+    inset-inline-end: 0;
+    min-inline-size: 12rem;
+    padding: var(--block-space-half);
+    position: absolute;
+    z-index: 5;
+  }
+
+  .meetings-pick__person {
+    gap: var(--inline-space);
+    justify-content: flex-start;
+    inline-size: 100%;
+  }
+
+  .meetings-people {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: calc(var(--inline-space) / 2);
+  }
+
+  .meetings-people-picker {
+    border: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--block-space-half) var(--inline-space);
+    margin: 0;
+    padding: 0;
+
+    legend {
+      margin-block-end: var(--block-space-half);
+      padding: 0;
+    }
+  }
+
+  .meetings-people-picker__person {
+    align-items: center;
+    border: 1px solid var(--color-ink-lighter);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    display: inline-flex;
+    gap: var(--inline-space);
+    padding: calc(var(--block-space-half) / 2) var(--inline-space);
+
+    &:has(:checked) {
+      background: var(--color-selected);
+      border-color: var(--color-link);
+    }
+  }
+
+  .meetings-reports {
+    display: grid;
+    gap: var(--block-space);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  }
+
+  .meetings-report {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space-half);
+    padding: var(--block-space);
+  }
+
+  .meetings-report__header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--inline-space);
+  }
+
+  .meetings-answers {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--block-space-half) / 2);
+    margin: 0;
+
+    dt {
+      font-size: var(--text-x-small);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-ink-dark);
+      margin-block-start: var(--block-space-half);
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+}
