@@ -1,0 +1,50 @@
+<% @page_title = "Repeating" %>
+<%= render "meetings/nav", current: :series %>
+
+<% content_for :index_filters do %>
+  <%= render "layouts/shared/quick_filter", title: "Show…", param: :all, current: @all ? "1" : "",
+        options: [ [ "Repeating", "" ], [ "Stopped too", "1" ] ] %>
+<% end %>
+<%= render "layouts/shared/index_toolbar", new_text: "Plan a meeting", new_path: new_meetings_meeting_path %>
+
+<% if @series.any? %>
+  <section class="panel shadow center index-table">
+    <table class="data-table">
+      <thead>
+        <tr><th>Meeting</th><th>When</th><th>People</th><th>Next</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @series.each do |series| %>
+          <%# herb:key series.id %>
+          <% upcoming = @next[series.id] %>
+          <tr data-filter-target="item">
+            <td class="font-weight-bold"><%= link_to series.title, edit_meetings_series_path(series), class: "txt-ink" %></td>
+            <td class="txt-small"><%= series.label %></td>
+            <td>
+              <span class="meetings-people">
+                <% series.person_ids.filter_map { @people[it] }.each do |person| %>
+                  <%# herb:key person.id %>
+                  <%= person_tag person %>
+                <% end %>
+              </span>
+            </td>
+            <td class="txt-nowrap txt-small">
+              <% if !series.active? %>
+                <%= status_tag "Stopped" %>
+              <% elsif upcoming %>
+                <%= link_to upcoming.when_label, meetings_meeting_path(upcoming), class: "txt-link" %>
+              <% else %>
+                <span class="txt-subtle">None planned</span>
+              <% end %>
+            </td>
+            <%= render "layouts/shared/row_actions", name: series.title, edit_path: (edit_meetings_series_path(series) if series.active?), delete_path: nil %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% else %>
+  <div class="blank-slate">
+    Nothing repeats yet. <%= link_to "Plan a meeting", new_meetings_meeting_path, class: "txt-link" %> and choose how often it repeats: every weekday, on set days each week or every two weeks, or monthly.
+  </div>
+<% end %>

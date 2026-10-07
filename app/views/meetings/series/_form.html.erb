@@ -1,0 +1,67 @@
+<%# locals: (series:) %>
+<%= render "layouts/shared/errors", record: series %>
+<% people = User.active.people.ordered.to_a %>
+
+<%= form_with model: series, url: meetings_series_path(series), method: :patch, scope: :series, class: "record-form", data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
+  <label class="record-form__field">
+    <span class="record-form__label">What it’s for</span>
+    <%= form.text_field :title, required: true, class: "input full-width", autocomplete: "off" %>
+  </label>
+
+  <div class="meetings-repeat">
+    <div class="record-form__row">
+      <label class="record-form__field">
+        <span class="record-form__label">Repeats</span>
+        <%= form.select :frequency, Meetings::Series::FREQUENCIES.invert.to_a, {}, class: "input input--select full-width meetings-repeat__frequency" %>
+        <span class="record-form__hint">Monthly is on the same weekday of the month as its first day, <%= l series.starts_on, format: :long %>.</span>
+      </label>
+      <label class="record-form__field">
+        <span class="record-form__label">At</span>
+        <%= form.time_field :time_of_day, required: true, class: "input full-width" %>
+        <span class="record-form__hint">Our time, <%= Time.zone.name %>.</span>
+      </label>
+      <label class="record-form__field">
+        <span class="record-form__label">Until <span class="txt-subtle">optional</span></span>
+        <%= date_input form, :ends_on, class: "input full-width" %>
+      </label>
+    </div>
+    <fieldset class="record-form__field meetings-repeat__weekdays">
+      <legend class="record-form__label">On</legend>
+      <%= hidden_field_tag "series[weekdays][]", "" %>
+      <div class="meetings-weekdays">
+        <% Meetings::Series::WEEKDAYS.each do |wday, name| %>
+          <%# herb:key wday %>
+          <label class="meetings-weekday">
+            <%= check_box_tag "series[weekdays][]", name.downcase, series.weekday_list.include?(wday), id: "series_weekday_#{wday}" %>
+            <span><%= name %></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+  </div>
+
+  <fieldset class="record-form__field meetings-people-picker">
+    <legend class="record-form__label">Who’s in it</legend>
+    <%= hidden_field_tag "series[person_ids][]", "" %>
+    <% people.each do |person| %>
+      <%# herb:key person.id %>
+      <label class="meetings-people-picker__person">
+        <%= check_box_tag "series[person_ids][]", person.id, series.person_ids.include?(person.id), id: "series_person_#{person.id}" %>
+        <%= person_tag person %>
+        <span><%= person.display_name %></span>
+      </label>
+    <% end %>
+  </fieldset>
+
+  <div class="record-form__field">
+    <span class="record-form__label">Agenda for each one</span>
+    <%= rich_text_field form, :agenda, placeholder: "What every one covers. Each meeting can add to its own.", staff: true %>
+  </div>
+
+  <div class="record-form__footer">
+    <%= link_to "Cancel", meetings_series_index_path, class: "btn btn--plain record-form__cancel", data: { form_target: "cancel" } %>
+    <button type="submit" class="btn btn--link" data-form-target="submit">
+      <span>Change every one to come</span>
+    </button>
+  </div>
+<% end %>

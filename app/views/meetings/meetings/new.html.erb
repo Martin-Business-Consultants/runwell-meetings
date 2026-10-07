@@ -7,7 +7,7 @@
 <section class="settings settings--split">
   <div class="settings__panel panel shadow txt-align-start">
     <h1 class="page-title"><%= @page_title %></h1>
-    <%= render "meetings/meetings/form", meeting: @meeting %>
+    <%= render "meetings/meetings/form", meeting: @meeting, repeat: @repeat %>
   </div>
 
   <aside class="settings__panel settings__panel--side panel shadow txt-align-start">
@@ -19,7 +19,7 @@
       <ol class="record-steps txt-small">
         <li>Everyone in it shows with their priorities for its day. They can set their own on My day before it starts.</li>
         <li>In the meeting, pick more from anyone’s open <%= term(:work).downcase %>, or add a line that isn’t <%= term(:work).downcase %>.</li>
-        <li>Take notes as it goes. Plan the next one with one press: same time, same people, the next weekday.</li>
+        <li>Take notes as it goes. A meeting that repeats plans its coming week by itself; a one-off’s next one is a press away.</li>
         <li>At the end of the day, each person reports on how it went.</li>
       </ol>
     </section>

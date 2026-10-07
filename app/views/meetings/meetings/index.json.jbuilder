@@ -4,5 +4,6 @@ json.meetings @meetings do |meeting|
   json.url meetings_meeting_url(meeting)
   json.extract! meeting, :title, :starts_at
   json.day meeting.day
+  json.series_id meeting.series_id
   json.people meeting.people.map { agent_user(it) }
 end

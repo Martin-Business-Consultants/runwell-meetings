@@ -5,6 +5,7 @@ module Meetings
     self.table_name = "meetings_meetings"
 
     belongs_to :created_by, class_name: "::User", optional: true
+    belongs_to :series, class_name: "Meetings::Series", optional: true, inverse_of: :meetings
     has_many :attendees, class_name: "Meetings::Attendee", dependent: :delete_all
     has_many :people, -> { ordered }, through: :attendees, source: :user
 
@@ -22,6 +23,8 @@ module Meetings
     before_validation :combine_start
     before_validation :clear_empty_text
     after_initialize :split_start
+    # A repeating meeting deleted on its own isn't planned again; one its series removes may be.
+    before_destroy { series&.skip!(day) unless @unplanned }
 
     # The day whose priorities it covers.
     def day = starts_at.in_time_zone.to_date
@@ -33,6 +36,20 @@ module Meetings
         priorities = Priority.where(user_id: attendees.select(:user_id), day: day).ordered.includes(:added_by, todo: [ :owner, { engagement: :client } ]).to_a
         people.to_a.index_with { |person| priorities.select { it.user_id == person.id } }
       end
+    end
+
+    # Its series takes it off the plan (a changed rule, or stopping), without skipping its day.
+    def unplan!
+      @unplanned = true
+      destroy!
+    end
+
+    # Everyone in it, by id, without looking each person up (a series sets many meetings at once).
+    def replace_people!(user_ids)
+      attendees.delete_all
+      Attendee.insert_all(user_ids.map { { meeting_id: id, user_id: it, created_at: Time.current, updated_at: Time.current } }) if user_ids.any?
+      attendees.reset
+      people.reset
     end
 
     def deletable_by?(person) = person.person == created_by || person.can?(:delete_records)

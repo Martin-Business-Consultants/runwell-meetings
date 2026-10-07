@@ -3,6 +3,7 @@ json.url meetings_meeting_url(@meeting)
 json.summary "#{@meeting.title}, #{@meeting.when_label}: #{@priorities.map { |person, priorities| "#{person.display_name} #{priorities.count(&:done?)}/#{priorities.size} done" }.join(", ")}"
 json.extract! @meeting, :title, :starts_at
 json.day @meeting.day
+json.repeats(@meeting.series && { series_id: @meeting.series.id, rule: @meeting.series.label })
 json.agenda agent_text(@meeting.agenda)
 json.notes agent_text(@meeting.notes)
 json.people @priorities do |person, priorities|

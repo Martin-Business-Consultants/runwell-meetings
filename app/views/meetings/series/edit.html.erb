@@ -1,0 +1,44 @@
+<% @page_title = @series.title %>
+<% content_for :header do %>
+  <%= parent_page "Repeating", meetings_series_index_path %>
+<% end %>
+<%= render "meetings/nav", current: :series %>
+<% upcoming = @series.upcoming_meetings.limit(6).to_a %>
+
+<section class="settings settings--split">
+  <div class="settings__panel panel shadow txt-align-start">
+    <h1 class="page-title"><%= @page_title %></h1>
+    <p class="record-meta txt-small txt-subtle margin-none"><%= @series.label %></p>
+    <%= render "meetings/series/form", series: @series %>
+  </div>
+
+  <aside class="settings__panel settings__panel--side panel shadow txt-align-start">
+    <%= render "layouts/shared/sidebar_toggle" %>
+    <section class="settings__section">
+      <header>
+        <h2 class="divider">Coming up</h2>
+      </header>
+      <% if upcoming.any? %>
+        <ul class="settings__scrollable-list">
+          <% upcoming.each do |meeting| %>
+            <%# herb:key meeting.id %>
+            <li class="flex align-center gap-half txt-small">
+              <%= link_to meeting.title, meetings_meeting_path(meeting), class: "txt-ink overflow-ellipsis min-width" %>
+              <hr class="separator--horizontal flex-item-grow txt-subtle" aria-hidden="true">
+              <span class="txt-subtle txt-nowrap"><%= meeting.when_label %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">Nothing planned.</p>
+      <% end %>
+      <p class="txt-x-small txt-subtle margin-none">The coming week is planned, and each night the next day. Saving changes every one that hasn’t started; past ones stay as they were.</p>
+    </section>
+
+    <% if @series.active? %>
+      <section class="settings__section">
+        <%= render "layouts/shared/confirm", trigger: "Stop repeating", title: "Stop #{@series.title}?", body: "No more are planned. Upcoming ones nobody has written notes or their own agenda in are removed; past ones stay.", button: "Stop it", path: stop_meetings_series_path(@series), method: :post, icon: "close" %>
+      </section>
+    <% end %>
+  </aside>
+</section>

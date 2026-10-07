@@ -15,7 +15,7 @@
       <% @meetings.each do |meeting| %>
         <%# herb:key meeting.id %>
         <%= render "layouts/shared/card", path: meetings_meeting_path(meeting), title: meeting.title, id_label: meeting.when_label,
-              meta: [ meeting.people.map(&:display_name).to_sentence ], status: (meeting.today? ? "Today" : nil), highlight: meeting.today? %>
+              meta: [ meeting.people.map(&:display_name).to_sentence, ("Repeats" if meeting.series_id) ], status: (meeting.today? ? "Today" : nil), highlight: meeting.today? %>
       <% end %>
     </section>
   <% else %>
@@ -28,7 +28,12 @@
           <% @meetings.each do |meeting| %>
             <%# herb:key meeting.id %>
             <tr data-filter-target="item">
-              <td class="font-weight-bold"><%= link_to meeting.title, meetings_meeting_path(meeting), class: "txt-ink" %></td>
+              <td class="font-weight-bold">
+                <%= link_to meeting.title, meetings_meeting_path(meeting), class: "txt-ink" %>
+                <% if meeting.series_id %>
+                  <span class="txt-x-small txt-subtle font-weight-normal">repeats</span>
+                <% end %>
+              </td>
               <td class="txt-nowrap"><%= meeting.when_label %></td>
               <td>
                 <span class="meetings-people">

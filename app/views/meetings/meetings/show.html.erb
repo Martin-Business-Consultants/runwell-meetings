@@ -11,12 +11,25 @@
       <h1 class="page-title"><%= @page_title %></h1>
       <p class="record-meta txt-small txt-subtle margin-none">
         <%= @meeting.when_label %> · priorities for <%= l @meeting.day, format: :long %> · <%= pluralize @meeting.people.size, "person" %>
+        <% if @meeting.series %>
+          · <%= link_to @meeting.series.label.downcase_first, edit_meetings_series_path(@meeting.series), class: "txt-link" %>
+        <% end %>
       </p>
     </div>
     <div class="page-heading__actions">
-      <%= button_to plan_next_meetings_meeting_path(@meeting), class: "btn btn--circle-mobile" do %>
-        <%= icon_tag "add" %>
-        <span>Plan the next one</span>
+      <% if @meeting.series %>
+        <% following = @meeting.series.meetings.where("starts_at > ?", @meeting.starts_at).order(:starts_at).first %>
+        <% if following %>
+          <%= link_to meetings_meeting_path(following), class: "btn btn--circle-mobile" do %>
+            <%= icon_tag "arrow-right" %>
+            <span>Next one</span>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= button_to plan_next_meetings_meeting_path(@meeting), class: "btn btn--circle-mobile" do %>
+          <%= icon_tag "add" %>
+          <span>Plan the next one</span>
+        <% end %>
       <% end %>
       <%= link_to edit_meetings_meeting_path(@meeting), class: "btn btn--circle-mobile", data: { keys: "e" } do %>
         <%= icon_tag "pencil" %>
@@ -157,7 +170,7 @@
 
   <% if @meeting.deletable_by?(Current.user) %>
     <div class="meetings-room__foot">
-      <%= render "layouts/shared/confirm", trigger: "Delete the meeting", title: "Delete #{@meeting.title}?", body: "Its agenda and notes go for good. Everyone’s priorities stay on their day.", button: "Delete it", path: meetings_meeting_path(@meeting) %>
+      <%= render "layouts/shared/confirm", trigger: "Delete the meeting", title: "Delete #{@meeting.title}?", body: (@meeting.series ? "Just this one: it won’t be planned again, and the series carries on. Everyone’s priorities stay on their day." : "Its agenda and notes go for good. Everyone’s priorities stay on their day."), button: "Delete it", path: meetings_meeting_path(@meeting) %>
     </div>
   <% end %>
 </div>

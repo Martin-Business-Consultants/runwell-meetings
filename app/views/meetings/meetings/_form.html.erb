@@ -1,7 +1,9 @@
-<%# locals: (meeting:) %>
+<%# locals: (meeting:, repeat: nil) %>
 <%= render "layouts/shared/errors", record: meeting %>
 <% people = User.active.people.ordered.to_a %>
 <% chosen = meeting.person_ids %>
+<% repeat ||= {} %>
+<% chosen_weekdays = Array(repeat[:repeat_weekdays]).map(&:to_s) %>
 
 <%= form_with model: meeting, url: (meeting.persisted? ? meetings_meeting_path(meeting) : meetings_meetings_path), scope: :meeting, class: "record-form", data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
   <label class="record-form__field">
@@ -21,6 +23,40 @@
       <span class="record-form__hint">Our time, <%= Time.zone.name %>.</span>
     </label>
   </div>
+
+  <% if meeting.series %>
+    <p class="record-form__hint margin-none">
+      One of a repeating meeting: <%= meeting.series.label.downcase_first %>. What you change here is for this one only.
+      <%= link_to "Change the series", edit_meetings_series_path(meeting.series), class: "txt-link" %> to change every one to come.
+    </p>
+  <% else %>
+    <div class="meetings-repeat">
+      <div class="record-form__row">
+        <label class="record-form__field">
+          <span class="record-form__label">Repeats</span>
+          <%= select_tag "meeting[repeats]", options_for_select([ [ "Doesn’t repeat", "none" ] ] + Meetings::Series::FREQUENCIES.invert.to_a, repeat[:repeats]), id: "meeting_repeats", class: "input input--select full-width meetings-repeat__frequency" %>
+          <span class="record-form__hint">Monthly is on the same weekday of the month as its day, like the second Tuesday.</span>
+        </label>
+        <label class="record-form__field meetings-repeat__until">
+          <span class="record-form__label">Until <span class="txt-subtle">optional</span></span>
+          <%= date_input_tag "meeting[repeat_until]", repeat[:repeat_until], id: "meeting_repeat_until", class: "input full-width" %>
+        </label>
+      </div>
+      <fieldset class="record-form__field meetings-repeat__weekdays">
+        <legend class="record-form__label">On</legend>
+        <div class="meetings-weekdays">
+          <% Meetings::Series::WEEKDAYS.each_value do |name| %>
+            <%# herb:key name %>
+            <label class="meetings-weekday">
+              <%= check_box_tag "meeting[repeat_weekdays][]", name.downcase, chosen_weekdays.include?(name.downcase), id: "meeting_repeat_#{name.downcase}" %>
+              <span><%= name %></span>
+            </label>
+          <% end %>
+        </div>
+        <span class="record-form__hint">None picked: the weekday of its day.</span>
+      </fieldset>
+    </div>
+  <% end %>
 
   <fieldset class="record-form__field meetings-people-picker">
     <legend class="record-form__label">Who’s in it</legend>

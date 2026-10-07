@@ -236,3 +236,65 @@
     }
   }
 }
+
+/* Repeats: the weekdays show only for weekly and every-two-weeks, the until date only once it
+/* repeats at all (CSS :has, no script). */
+@layer components {
+  .meetings-repeat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space);
+  }
+
+  .meetings-repeat__weekdays {
+    border: 0;
+    display: none;
+    margin: 0;
+    padding: 0;
+
+    legend {
+      margin-block-end: var(--block-space-half);
+      padding: 0;
+    }
+  }
+
+  .meetings-repeat:has(.meetings-repeat__frequency option:is([value="weekly"], [value="biweekly"]):checked) .meetings-repeat__weekdays {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space-half);
+  }
+
+  .meetings-repeat:has(.meetings-repeat__frequency option[value="none"]:checked) .meetings-repeat__until {
+    display: none;
+  }
+
+  .meetings-weekdays {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--inline-space) / 2);
+  }
+
+  .meetings-weekday {
+    border: 1px solid var(--color-ink-lighter);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    padding: calc(var(--block-space-half) / 2) var(--inline-space);
+
+    input {
+      block-size: 1px;
+      inline-size: 1px;
+      opacity: 0;
+      position: absolute;
+    }
+
+    &:has(:checked) {
+      background: var(--color-selected);
+      border-color: var(--color-link);
+    }
+
+    &:has(:focus-visible) {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: 1px;
+    }
+  }
+}

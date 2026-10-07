@@ -8,17 +8,19 @@ module Meetings
       params: { state: %w[upcoming past all], mine: "boolean" }
     agent_tool :show_meeting, on: :show, title: "Show a team meeting",
       description: "Its agenda and notes, and each person in it with their priorities for its day (work or their own lines, done or not)."
-    agent_tool :plan_meeting, on: :create, title: "Plan a team meeting",
-      description: "starts_on and starts_at_time (24h, \"09:30\") in the install's time zone. person_ids: who's in it (you, if left out). The priorities it shows are each person's for that day.",
-      params: { meeting: { title: "string!", starts_on: "date!", starts_at_time: "string", person_ids: "integer[]", agenda: "text" } },
+    agent_tool :plan_meeting, on: :create, title: "Plan a team meeting, once or repeating",
+      description: "starts_on and starts_at_time (24h, \"09:30\") in the install's time zone. person_ids: who's in it (you, if left out). The priorities it shows are each person's for that day. To repeat it: repeats weekdays (Monday to Friday), weekly or biweekly (on repeat_weekdays, e.g. [\"mon\", \"thu\"]; starts_on's weekday if none), or monthly (the same weekday of the month as starts_on, e.g. the second Tuesday); repeat_until: the last day, or never. The agenda then starts each one.",
+      params: { meeting: { title: "string!", starts_on: "date!", starts_at_time: "string", person_ids: "integer[]", agenda: "text",
+        repeats: %w[none weekdays weekly biweekly monthly], repeat_weekdays: "string[]", repeat_until: "date" } },
       next_tools: %i[show_meeting add_priority]
     agent_tool :update_meeting, on: :update, title: "Change a team meeting",
-      description: "Its title, time, people, agenda, or the notes taken in it. person_ids replaces everyone in it.",
-      params: { meeting: { title: "string", starts_on: "date", starts_at_time: "string", person_ids: "integer[]", agenda: "text", notes: "text" } }
+      description: "This one meeting: its title, time, people, agenda, or the notes taken in it. person_ids replaces everyone in it. For a repeating one, update_meeting_series changes every one to come. A one-off can start repeating with repeats (as in plan_meeting), from its day.",
+      params: { meeting: { title: "string", starts_on: "date", starts_at_time: "string", person_ids: "integer[]", agenda: "text", notes: "text",
+        repeats: %w[none weekdays weekly biweekly monthly], repeat_weekdays: "string[]", repeat_until: "date" } }
     agent_tool :plan_next_meeting, on: :plan_next, title: "Plan the next one",
       description: "The same meeting (title, time, people) on the next weekday, with an empty agenda. Answers the one already there if it exists."
     agent_tool :delete_meeting, on: :destroy, title: "Delete a team meeting",
-      description: "Whoever planned it, or someone who may delete records. Priorities stay: they belong to each person's day."
+      description: "Whoever planned it, or someone who may delete records. Priorities stay: they belong to each person's day. One of a repeating series is skipped, not planned again; stop_meeting_series ends the series."
 
     before_action :set_meeting, except: %i[index new create]
 
@@ -45,8 +47,11 @@ module Meetings
     def create
       @meeting = Meeting.new(meeting_params.merge(created_by: Current.user.person))
       @meeting.person_ids = [ Current.user.person.id ] if @meeting.attendees.empty?
+      series = build_series
 
-      if @meeting.save
+      if series
+        start_series(series)
+      elsif @meeting.save
         redirect_to meetings_meeting_path(@meeting), notice: "Planned #{@meeting.title} for #{@meeting.when_label}, with #{@meeting.people.map(&:display_name).to_sentence}."
       else
         render :new, status: :unprocessable_entity
@@ -57,8 +62,13 @@ module Meetings
     end
 
     def update
-      if @meeting.update(meeting_params)
-        redirect_to meetings_meeting_path(@meeting), notice: "Saved #{@meeting.title}."
+      @meeting.assign_attributes(meeting_params)
+      series = build_series unless @meeting.series
+
+      if series
+        start_series(series)
+      elsif @meeting.save
+        redirect_to meetings_meeting_path(@meeting), notice: "Saved #{@meeting.title}#{" (this one only; the series is unchanged)" if @meeting.series}."
       else
         render :edit, status: :unprocessable_entity
       end
@@ -80,9 +90,41 @@ module Meetings
       def set_meeting = @meeting = Meeting.find(params[:id])
 
       def meeting_params
-        attributes = params.expect(meeting: [ :title, :starts_on, :starts_at_time, :agenda, :notes, person_ids: [] ])
+        attributes = params.expect(meeting: [ :title, :starts_on, :starts_at_time, :agenda, :notes, :repeats, :repeat_until, person_ids: [], repeat_weekdays: [] ])
+        @repeat = attributes.extract!(:repeats, :repeat_until, :repeat_weekdays)
         attributes[:person_ids] = ::User.active.people.where(id: attributes[:person_ids].compact_blank).ids if attributes.key?(:person_ids)
         attributes
+      end
+
+      # A series when the form asks for the meeting to repeat: its rule from the form, the rest
+      # from the meeting.
+      def build_series
+        frequency = @repeat[:repeats].presence_in(Series::FREQUENCIES.keys) or return
+        Series.new(title: @meeting.title, frequency: frequency, weekday_list: @repeat[:repeat_weekdays], ends_on: @repeat[:repeat_until].presence,
+          time_of_day: @meeting.starts_at_time, starts_on: @meeting.starts_on, person_ids: @meeting.person_ids,
+          agenda: @meeting.agenda, created_by: @meeting.created_by || Current.user.person)
+      end
+
+      # Saves the series and plans its first week. A meeting already saved (a one-off made to
+      # repeat) becomes its first occurrence when it falls on the rule; a new one is planned by
+      # the series itself.
+      def start_series(series)
+        meeting_valid = @meeting.valid?
+        unless meeting_valid && series.valid?
+          series.errors.each { @meeting.errors.add(:base, "Repeats: #{it.full_message.downcase_first}") }
+          return render(@meeting.persisted? ? :edit : :new, status: :unprocessable_entity)
+        end
+
+        Series.transaction do
+          series.save!
+          if @meeting.persisted?
+            @meeting.series = series if series.occurs_on?(@meeting.day)
+            @meeting.save!
+          end
+          series.plan_ahead!
+        end
+        first = series.upcoming_meetings.first || @meeting
+        redirect_to meetings_meeting_path(first), notice: "#{series.title} repeats: #{series.label.downcase_first}. The coming week is planned; each night plans the next day."
       end
 
       # Open work to pick priorities from: what the search finds across everyone's, or else the
