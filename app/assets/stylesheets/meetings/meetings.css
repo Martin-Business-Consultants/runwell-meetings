@@ -358,11 +358,23 @@
     margin-inline-start: auto;
   }
 
+  /* The + menu: the core's modal dialog, centred in the window over a dimmed page. */
+  .meetings-pick-dialog {
+    --panel-padding: 1.5rem;
+    --panel-size: fit-content;
+
+    inset: 0;
+    margin: auto;
+    max-block-size: calc(100dvh - var(--block-space) * 4);
+    overflow-y: auto;
+    position: fixed;
+  }
+
   .meetings-pick-menu {
     display: flex;
     flex-direction: column;
     gap: var(--block-space-half);
-    inline-size: min(26rem, 85vw);
+    inline-size: min(30rem, calc(100vw - 6rem));
   }
 
   .meetings-pick-menu__list {

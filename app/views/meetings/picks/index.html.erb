@@ -1,8 +1,13 @@
 <% frame = "pick_for_#{@person.id}" %>
 <turbo-frame id="<%= frame %>">
   <div class="meetings-pick-menu" data-controller="filter" data-filter-fuzzy-value="true">
-    <div class="flex align-start justify-space-between gap-half">
-      <strong class="popup__title">A priority for <%= @person.display_name %></strong>
+    <div class="flex align-center justify-space-between gap-half">
+      <h2 class="dialog__title">A priority for <%= @person.display_name %></h2>
+      <button type="button" class="btn btn--plain txt-small" data-action="dialog#close">
+        <%= icon_tag "close" %>
+        <span class="for-screen-reader">Close</span>
+        <kbd class="hide-on-touch">Esc</kbd>
+      </button>
     </div>
 
     <form action="<%= meetings_picks_path %>" method="get" class="meetings-pick-menu__scope" data-controller="form">
