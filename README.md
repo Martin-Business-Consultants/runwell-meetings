@@ -4,10 +4,12 @@ A team's daily rhythm in [Runwell](https://github.com/Martin-Business-Consultant
 
 - **My day**: each person picks the few things that matter today, from their open work or as a
   line of their own (a call, an errand), and carries over what didn't get done yesterday. They're
-  in the person's own order: drag one (the core's drag-and-drop) or move it with its arrows, kept
-  by the core's positioning gem.
+  in the person's own order: drag one to reorder (the core's drag-and-drop), kept by the core's
+  positioning gem.
 - **Team day**: everyone's priorities and reports for a day side by side, to go through together;
-  narrowed to one meeting's people from that meeting (Team day) or its filter.
+  narrowed to one meeting's people from that meeting (Team day) or its filter. The + on each
+  person's card opens a fuzzy finder of open work (theirs first), narrowed to a client or an
+  engagement, or takes a line of their own.
 - **Meetings**: an agenda and notes, and the meeting room: everyone in the meeting with their
   priorities for its day on the right, and open work to pick from on the left. Search either side;
   add work to anyone's day from its + menu. "Plan the next one" repeats a one-off on the next weekday.
@@ -48,5 +50,5 @@ From a Runwell checkout beside it: `bin/rails "plugins:link[../runwell-meetings]
 
 ## Release
 
-Bump `lib/meetings/version.rb`, commit, then `git tag v0.3.0 && git push --tags`. The workflow
+Bump `lib/meetings/version.rb`, commit, then `git tag v0.4.0 && git push --tags`. The workflow
 publishes the release; installs see it in Settings › Plugins and update when someone presses Update.

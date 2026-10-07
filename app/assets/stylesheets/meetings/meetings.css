@@ -299,10 +299,11 @@
   }
 }
 
-/* Reordering a day's priorities: a handle to drag (the core's drag-and-drop), and arrows that
-/* show on the row you're on; the first has no up, the last no down. Team day: a card per person. */
+/* Reordering a day's priorities: drag a row (the core's drag-and-drop); its handle shows on the
+/* row you're on. Team day: a card per person, its + menu of work to pick from. */
 @layer components {
   .meetings-priority {
+    cursor: grab;
     position: relative;
   }
 
@@ -313,32 +314,11 @@
     opacity: 0.4;
   }
 
-  .meetings-priority__moves {
-    display: inline-flex;
-    flex: none;
-    opacity: 0;
-
-    form {
-      display: contents;
-    }
-  }
-
-  .meetings-priority:is(:hover, :focus-within) .meetings-priority__moves,
   .meetings-priority:is(:hover, :focus-within) .meetings-priority__handle {
     opacity: 1;
   }
 
-  .meetings-priority__move--down .icon {
-    rotate: 180deg;
-  }
-
-  .meetings-priority:first-child .meetings-priority__move--up,
-  .meetings-priority:last-child .meetings-priority__move--down {
-    visibility: hidden;
-  }
-
   @media (any-hover: none) {
-    .meetings-priority__moves,
     .meetings-priority__handle {
       opacity: 1;
     }
@@ -364,5 +344,47 @@
     summary {
       cursor: pointer;
     }
+  }
+}
+
+/* Team day: the + at the top right of each person's card opens their menu of work. */
+@layer components {
+  .meetings-team__person .meetings-person__header {
+    position: relative;
+  }
+
+  .meetings-team__add {
+    margin-inline-start: auto;
+  }
+
+  .meetings-pick-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space-half);
+    inline-size: min(26rem, 85vw);
+  }
+
+  .meetings-pick-menu__list {
+    max-block-size: 22rem;
+    overflow-y: auto;
+  }
+
+  .meetings-pick-menu__todo {
+    align-items: center;
+    gap: var(--inline-space);
+    justify-content: space-between;
+    text-align: start;
+  }
+
+  .meetings-pick-menu__text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  .meetings-pick-menu__line {
+    border-block-start: 1px solid var(--color-ink-lighter);
+    padding-block-start: var(--block-space-half);
   }
 }

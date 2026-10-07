@@ -48,6 +48,18 @@
           <%= person_tag person, size: :large %>
           <%= link_to person.display_name, meetings_day_path(team.date.iso8601, person.id), class: "txt-ink font-weight-bold" %>
           <span class="txt-x-small txt-subtle"><%= priorities.count(&:done?) %> of <%= priorities.size %> done</span>
+          <div class="meetings-team__add" data-controller="dialog" data-dialog-orient-value="true"
+            data-action="keydown.esc->dialog#close click@document->dialog#closeOnClickOutside">
+            <button type="button" class="btn btn--circle txt-small" title="Add a priority for <%= person.display_name %>" data-action="click->dialog#toggle:stop">
+              <%= icon_tag "add" %>
+              <span class="for-screen-reader">Add a priority for <%= person.display_name %></span>
+            </button>
+            <dialog class="popup panel flex-column align-start gap-half fill-white shadow txt-small" aria-label="A priority for <%= person.display_name %>" data-dialog-target="dialog">
+              <turbo-frame id="pick_for_<%= person.id %>" loading="lazy" src="<%= meetings_picks_path(user_id: person.id, day: team.date.iso8601) %>">
+                <p class="txt-small txt-subtle margin-none">Loading <%= term(:work).downcase %>…</p>
+              </turbo-frame>
+            </dialog>
+          </div>
         </header>
 
         <% if priorities.any? %>
@@ -56,15 +68,6 @@
           <p class="txt-small txt-subtle margin-none">No priorities set.</p>
         <% end %>
 
-        <details class="meetings-person__add">
-          <summary class="btn btn--plain txt-x-small txt-subtle"><%= icon_tag "add" %><span>Add a line</span></summary>
-          <%= form_with url: meetings_priorities_path, scope: :priority, class: "flex gap-half txt-small", namespace: "team_person_#{person.id}" do |form| %>
-            <%= form.hidden_field :user_id, value: person.id %>
-            <%= form.hidden_field :day, value: team.date.iso8601 %>
-            <%= form.text_field :title, class: "input flex-item-grow", placeholder: "A priority for the day", required: true, maxlength: 200, autocomplete: "off" %>
-            <button type="submit" class="btn txt-small">Add</button>
-          <% end %>
-        </details>
 
         <div class="meetings-team__report">
           <% if report %>

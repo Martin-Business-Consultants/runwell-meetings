@@ -1,0 +1,48 @@
+<% frame = "pick_for_#{@person.id}" %>
+<turbo-frame id="<%= frame %>">
+  <div class="meetings-pick-menu" data-controller="filter" data-filter-fuzzy-value="true">
+    <div class="flex align-start justify-space-between gap-half">
+      <strong class="popup__title">A priority for <%= @person.display_name %></strong>
+    </div>
+
+    <form action="<%= meetings_picks_path %>" method="get" class="meetings-pick-menu__scope" data-controller="form">
+      <input type="hidden" name="user_id" value="<%= @person.id %>">
+      <input type="hidden" name="day" value="<%= @date.iso8601 %>">
+      <% choices = @clients.map { |client| [ client.name, [ [ "All of #{client.name}", "client:#{client.id}" ] ] + client.engagements.select { @open_engagement_ids.include?(it.id) }.sort_by(&:ref).map { [ "#{it.ref} #{it.title}", "engagement:#{it.ref}" ] } ] } %>
+      <select name="scope" class="input input--select txt-small full-width" aria-label="Which <%= term(:client).downcase %> or <%= term(:engagement).downcase %>" data-action="change->form#submit">
+        <%= tag.option "Every #{term(:client).downcase} and #{term(:engagement).downcase}", value: "" %>
+        <%= grouped_options_for_select(choices, @scope) %>
+      </select>
+    </form>
+
+    <input type="search" class="input input--transparent txt-small full-width owner-picker__search" placeholder="Find <%= term(:work).downcase %>…" autocomplete="off" autofocus
+      aria-label="Find <%= term(:work).downcase %>" data-1p-ignore="true" data-filter-target="input" data-action="input->filter#filter keydown.enter->filter#chooseFirst">
+
+    <% if @todos.any? %>
+      <ul class="popup__list meetings-pick-menu__list">
+        <% @todos.each do |todo| %>
+          <%# herb:key todo.id %>
+          <li class="popup__item" data-filter-target="item">
+            <%= button_to meetings_priorities_path, params: { priority: { todo_id: todo.id, user_id: @person.id, day: @date.iso8601 } },
+                  class: "btn popup__btn full-width meetings-pick-menu__todo", form_class: "full-width", form: { data: { turbo_frame: "_top" } } do %>
+              <span class="meetings-pick-menu__text">
+                <span class="overflow-ellipsis"><%= todo.title %></span>
+                <span class="txt-x-small txt-subtle overflow-ellipsis"><%= todo.engagement.client.name %> · <%= todo.engagement.ref %> <%= todo.engagement.title %><% if todo.due_on %> · due <%= l todo.due_on, format: :short %><% end %></span>
+              </span>
+              <%= todo_owners_tag todo %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="txt-small txt-subtle margin-none">No open <%= term(:work).downcase %> here that isn’t already on <%= @person.display_name %>’s day.</p>
+    <% end %>
+
+    <%= form_with url: meetings_priorities_path, scope: :priority, class: "flex gap-half txt-small meetings-pick-menu__line", namespace: frame, data: { turbo_frame: "_top" } do |form| %>
+      <%= form.hidden_field :user_id, value: @person.id %>
+      <%= form.hidden_field :day, value: @date.iso8601 %>
+      <%= form.text_field :title, class: "input flex-item-grow", placeholder: "Or a line of their own", required: true, maxlength: 200, autocomplete: "off" %>
+      <button type="submit" class="btn txt-small">Add</button>
+    <% end %>
+  </div>
+</turbo-frame>
