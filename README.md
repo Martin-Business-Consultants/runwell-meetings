@@ -50,5 +50,5 @@ From a Runwell checkout beside it: `bin/rails "plugins:link[../runwell-meetings]
 
 ## Release
 
-Bump `lib/meetings/version.rb`, commit, then `git tag v0.4.0 && git push --tags`. The workflow
+Bump `lib/meetings/version.rb`, commit, then `git tag v0.4.1 && git push --tags`. The workflow
 publishes the release; installs see it in Settings › Plugins and update when someone presses Update.

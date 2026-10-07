@@ -49,6 +49,7 @@
     max-block-size: 70vh;
     min-block-size: 20rem;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: var(--block-space);
   }
 
@@ -367,6 +368,7 @@
   .meetings-pick-menu__list {
     max-block-size: 22rem;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .meetings-pick-menu__todo {
